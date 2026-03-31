@@ -12,18 +12,17 @@
 
     <style>
         body { margin: 0; padding: 0; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100vh; }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <script>
-        // STAP 2: Registreer het PMTiles protocol VOORDAT de kaart wordt aangemaakt
-        // Dit voorkomt de "this.tiles" error
+        // 2. Activeer het PMTiles protocol direct
         const protocol = new pmtiles.Protocol();
         maplibregl.addProtocol("pmtiles", protocol.add);
 
-        // STAP 3: Maak de kaart aan
+        // 3. Initialiseer de kaart met een standaard Carto stijl
         const map = new maplibregl.Map({
             container: 'map',
             style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
@@ -32,17 +31,17 @@
         });
 
         map.on('load', () => {
-            // STAP 4: Voeg de bron toe met het pmtiles:// protocol
-            map.addSource('veenweide_bron', {
+            // 4. Voeg de PMTiles bron toe
+            map.addSource('veenweide_source', {
                 type: 'vector',
                 url: 'pmtiles://' + 'veenweide.pmtiles'
             });
 
-            // STAP 5: Voeg de laag toe
+            // 5. Teken de laag
             map.addLayer({
-                'id': 'veenweide_vlakken',
+                'id': 'veenweide_laag_id',
                 'type': 'fill',
-                'source': 'veenweide_bron',
+                'source': 'veenweide_source',
                 'source-layer': 'veenweide_laag',
                 'paint': {
                     'fill-color': '#8d6e63',
@@ -52,9 +51,9 @@
             });
         });
 
-        // Foutafhandeling die we in de Console kunnen zien
+        // Foutopsporing voor de console
         map.on('error', (e) => {
-            console.error('Kaartfout:', e);
+            console.error('MapLibre Error:', e);
         });
     </script>
 </body>
