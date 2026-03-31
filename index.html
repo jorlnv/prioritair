@@ -1,42 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Veenweide Kaart</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<title>Veenweide Kaart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@2.6.2/dist/maplibre-gl.css" rel="stylesheet" />
-    <style>
-        body { margin:0; padding:0; }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
-    </style>
+<!-- MapLibre GL CSS -->
+<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@2.6.2/dist/maplibre-gl.css" rel="stylesheet"/>
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+</style>
 </head>
 <body>
 <div id="map"></div>
 
+<!-- MapLibre GL JS -->
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@2.6.2/dist/maplibre-gl.js"></script>
+<!-- PMTiles loader -->
 <script src="https://cdn.jsdelivr.net/npm/@protomaps/pmtiles@0.12.0/dist/pmtiles.min.js"></script>
 
 <script>
 async function initMap() {
+    // 1. Maak MapLibre map
     const map = new maplibregl.Map({
         container: 'map',
         style: { version: 8, sources: {}, layers: [] },
-        center: [5.1, 52.1],  // pas aan
+        center: [5.1, 52.1],  // pas aan naar jouw regio
         zoom: 11
     });
 
+    // 2. Open PMTiles in root
     const pmtiles = new PMTiles('veenweide.pmtiles');
     await pmtiles.open();
 
-    map.addSource('veenweide', pmtiles.getMaplibreVectorSource());
+    // 3. Voeg de PMTiles source toe
+    map.addSource('veenweide', pmtiles.getMaplibreVectorTileSource());
 
+    // 4. Voeg de laag toe
     map.addLayer({
         id: 'veenweide_laag',
-        type: 'fill',                 // of 'line', afhankelijk van je data
+        type: 'fill',                  // of 'line', 'circle' afhankelijk van je data
         source: 'veenweide',
         'source-layer': 'veenweide_laag',
-        paint: { 'fill-color': '#88cc88', 'fill-opacity': 0.5 }
+        paint: {
+            'fill-color': '#88cc88',
+            'fill-opacity': 0.5
+        }
     });
 }
 
