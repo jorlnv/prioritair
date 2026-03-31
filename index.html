@@ -3,11 +3,13 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Veenweide Kaart</title>
+    <title>Veenweide Check</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+
     <script src="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.js"></script>
     <link href="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/pmtiles@3.0.6/dist/index.js"></script>
+
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
@@ -16,37 +18,42 @@
 <body>
 <div id="map"></div>
 <script>
-    // 1. Registreer het PMTiles protocol
-    let protocol = new pmtiles.Protocol();
+    // STAP 1: Registreer het protocol DIRECT
+    const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol("pmtiles", protocol.add);
 
-    // 2. Initialiseer de kaart
+    // STAP 2: Initialiseer de kaart
     const map = new maplibregl.Map({
         container: 'map',
         style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-        center: [5.1, 52.1], 
+        center: [5.1, 52.1],
         zoom: 8
     });
 
     map.on('load', () => {
-        // 3. Voeg de bron toe (gebruik de exacte bestandsnaam)
-        map.addSource('veenweide_source', {
+        // STAP 3: Voeg de bron toe
+        // Let op: 'veenweide.pmtiles' moet in dezelfde map op GitHub staan
+        map.addSource('veenweide_data', {
             type: 'vector',
-            url: 'pmtiles://veenweide.pmtiles'
+            url: 'pmtiles://veenweide.pmtiles' 
         });
 
-        // 4. Voeg de laag toe
+        // STAP 4: Voeg de visuele laag toe
         map.addLayer({
-            'id': 'veenweide_laag_fill',
+            'id': 'veenweide-laag-fill',
             'type': 'fill',
-            'source': 'veenweide_source',
-            'source-layer': 'veenweide_laag', // De naam die in pmtiles.io werkte
+            'source': 'veenweide_data',
+            'source-layer': 'veenweide_laag',
             'paint': {
-                'fill-color': '#8d6e63',
-                'fill-opacity': 0.6,
-                'fill-outline-color': '#ffffff'
+                'fill-color': '#ff0000', // Felrood om te testen of het überhaupt werkt
+                'fill-opacity': 0.5
             }
         });
+    });
+
+    // Foutopsporing: als er iets misgaat, zie je het in de F12 console
+    map.on('error', (e) => {
+        console.error("MapLibre fout:", e);
     });
 </script>
 </body>
