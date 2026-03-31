@@ -1,60 +1,69 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <title>Veenweide Kaart</title>
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta charset="utf-8">
+    <title>PMTiles kaart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
-    <script src="https://unpkg.com/pmtiles@3.2.0/dist/index.js"></script>
-
+    <!-- MapLibre GL CSS -->
+    <link href="https://unpkg.com/maplibre-gl@2.6.1/dist/maplibre-gl.css" rel="stylesheet" />
     <style>
-        body { margin: 0; padding: 0; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-    <script>
-        // 1. REGISTREER HET PROTOCOL
-        const protocol = new pmtiles.Protocol();
-        maplibregl.addProtocol("pmtiles", protocol.add);
+<div id="map"></div>
 
-        // 2. INITIALISEER DE KAART
-        const map = new maplibregl.Map({
-            container: 'map',
-            style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-            center: [5.1, 52.1],
-            zoom: 8
-        });
+<!-- MapLibre GL JS -->
+<script src="https://unpkg.com/maplibre-gl@2.6.1/dist/maplibre-gl.js"></script>
 
-        map.on('load', () => {
-            // 3. VOEG DE BRON TOE
-            map.addSource('veenweide_bron', {
-                type: 'vector',
-                url: 'pmtiles://' + 'veenweide.pmtiles'
-            });
+<!-- PMTiles JS -->
+<script src="https://unpkg.com/@protomaps/pmtiles@0.12.0/dist/pmtiles.min.js"></script>
 
-            // 4. VOEG DE LAAG TOE
-            map.addLayer({
-                'id': 'veenweide_laag_visual',
-                'type': 'fill',
-                'source': 'veenweide_bron',
-                'source-layer': 'veenweide_laag',
-                'paint': {
-                    'fill-color': '#8d6e63',
-                    'fill-opacity': 0.6,
-                    'fill-outline-color': '#ffffff'
-                }
-            });
-        });
+<script>
+async function initMap() {
+    // 1. Maak MapLibre map
+    const map = new maplibregl.Map({
+        container: 'map',
+        style: {
+            version: 8,
+            sources: {},
+            layers: []
+        },
+        center: [5.1, 52.1],  // pas aan naar jouw regio
+        zoom: 12
+    });
 
-        // Dit logt fouten direct naar je browser console
-        map.on('error', (e) => {
-            console.error('Kaartfout:', e);
-        });
-    </script>
+    // 2. PMTiles source
+    const pmtilesUrl = 'tiles/veenweide.pmtiles';  // pad op GitHub Pages
+    const pmtilesSource = new PMTiles(pmtilesUrl);
+    await pmtilesSource.open();
+
+    // 3. Voeg de PMTiles-laag toe als vector source
+    map.addSource('veenweide', {
+        type: 'vector',
+        tiles: [
+            `pmtiles://${pmtilesUrl}`  // dit wordt afgehandeld door pmtiles.js
+        ],
+        minzoom: 0,
+        maxzoom: 14
+    });
+
+    // 4. Voeg de layer toe
+    map.addLayer({
+        id: 'veenweide_laag',
+        type: 'fill',          // type afhankelijk van je data (fill, line, circle, etc.)
+        source: 'veenweide',
+        'source-layer': 'veenweide_laag',  // zoals je in Tippecanoe hebt ingesteld
+        paint: {
+            'fill-color': '#88cc88',
+            'fill-opacity': 0.5
+        }
+    });
+}
+
+initMap();
+</script>
 </body>
 </html>
