@@ -3,12 +3,13 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Veenweide Check</title>
+    <title>Veenweide Kaart</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 
     <script src="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.js"></script>
     <link href="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.css" rel="stylesheet" />
-    <script src="https://unpkg.com/pmtiles@3.0.6/dist/index.js"></script>
+
+    <script src="https://unpkg.com/pmtiles@3.0.6/dist/pmtiles.js"></script>
 
     <style>
         body { margin: 0; padding: 0; }
@@ -18,11 +19,10 @@
 <body>
 <div id="map"></div>
 <script>
-    // STAP 1: Registreer het protocol DIRECT
+    // De bibliotheek laadt in Safari als 'pmtiles' object in de globale scope
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol("pmtiles", protocol.add);
 
-    // STAP 2: Initialiseer de kaart
     const map = new maplibregl.Map({
         container: 'map',
         style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
@@ -31,29 +31,26 @@
     });
 
     map.on('load', () => {
-        // STAP 3: Voeg de bron toe
-        // Let op: 'veenweide.pmtiles' moet in dezelfde map op GitHub staan
-        map.addSource('veenweide_data', {
+        map.addSource('veenweide_source', {
             type: 'vector',
-            url: 'pmtiles://veenweide.pmtiles' 
+            url: 'pmtiles://veenweide.pmtiles'
         });
 
-        // STAP 4: Voeg de visuele laag toe
         map.addLayer({
-            'id': 'veenweide-laag-fill',
+            'id': 'veenweide_laag_fill',
             'type': 'fill',
-            'source': 'veenweide_data',
+            'source': 'veenweide_source',
             'source-layer': 'veenweide_laag',
             'paint': {
-                'fill-color': '#ff0000', // Felrood om te testen of het überhaupt werkt
-                'fill-opacity': 0.5
+                'fill-color': '#8d6e63',
+                'fill-opacity': 0.6,
+                'fill-outline-color': '#ffffff'
             }
         });
     });
 
-    // Foutopsporing: als er iets misgaat, zie je het in de F12 console
     map.on('error', (e) => {
-        console.error("MapLibre fout:", e);
+        console.error("Kaartfout details:", e);
     });
 </script>
 </body>
