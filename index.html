@@ -12,17 +12,17 @@
 
     <style>
         body { margin: 0; padding: 0; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100vh; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <script>
-        // 2. Activeer het PMTiles protocol direct
+        // 1. REGISTREER HET PROTOCOL
         const protocol = new pmtiles.Protocol();
         maplibregl.addProtocol("pmtiles", protocol.add);
 
-        // 3. Initialiseer de kaart met een standaard Carto stijl
+        // 2. INITIALISEER DE KAART
         const map = new maplibregl.Map({
             container: 'map',
             style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
@@ -31,17 +31,17 @@
         });
 
         map.on('load', () => {
-            // 4. Voeg de PMTiles bron toe
-            map.addSource('veenweide_source', {
+            // 3. VOEG DE BRON TOE
+            map.addSource('veenweide_bron', {
                 type: 'vector',
                 url: 'pmtiles://' + 'veenweide.pmtiles'
             });
 
-            // 5. Teken de laag
+            // 4. VOEG DE LAAG TOE
             map.addLayer({
-                'id': 'veenweide_laag_id',
+                'id': 'veenweide_laag_visual',
                 'type': 'fill',
-                'source': 'veenweide_source',
+                'source': 'veenweide_bron',
                 'source-layer': 'veenweide_laag',
                 'paint': {
                     'fill-color': '#8d6e63',
@@ -51,9 +51,9 @@
             });
         });
 
-        // Foutopsporing voor de console
+        // Dit logt fouten direct naar je browser console
         map.on('error', (e) => {
-            console.error('MapLibre Error:', e);
+            console.error('Kaartfout:', e);
         });
     </script>
 </body>
