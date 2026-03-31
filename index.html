@@ -5,52 +5,55 @@
 <title>Veenweide Kaart</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- MapLibre GL CSS -->
-<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@2.6.2/dist/maplibre-gl.css" rel="stylesheet"/>
+<!-- Juiste CDN links voor MapLibre + PMTiles -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.css" />
 <style>
-  body { margin:0; padding:0; }
+  body { margin: 0; padding: 0; }
   #map { position:absolute; top:0; bottom:0; width:100%; }
 </style>
 </head>
 <body>
 <div id="map"></div>
 
-<!-- MapLibre GL JS -->
-<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@2.6.2/dist/maplibre-gl.js"></script>
-<!-- PMTiles loader -->
-<script src="https://cdn.jsdelivr.net/npm/@protomaps/pmtiles@0.12.0/dist/pmtiles.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pmtiles@4.4.0/dist/pmtiles.min.js"></script>
 
 <script>
 async function initMap() {
-    // 1. Maak MapLibre map
     const map = new maplibregl.Map({
         container: 'map',
         style: { version: 8, sources: {}, layers: [] },
-        center: [5.1, 52.1],  // pas aan naar jouw regio
+        center: [5.1, 52.1],
         zoom: 11
     });
 
-    // 2. Open PMTiles in root
-    const pmtiles = new PMTiles('veenweide.pmtiles');
-    await pmtiles.open();
+    // Voer PMTiles protocol handler toe
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol('pmtiles', protocol.tile);
 
-    // 3. Voeg de PMTiles source toe
-    map.addSource('veenweide', pmtiles.getMaplibreVectorTileSource());
+    // Laad je eigen PMTiles bestand — pas pad indien nodig
+    const url = `${location.protocol}//${location.host}${location.pathname}veenweide.pmtiles`;
+    const p = new pmtiles.PMTiles(url);
+    protocol.add(p);
 
-    // 4. Voeg de laag toe
+    await p.getHeader();
+
+    map.addSource('veenweide', {
+        type: 'vector',
+        url: `pmtiles://${url}`
+    });
+
     map.addLayer({
         id: 'veenweide_laag',
-        type: 'fill',                  // of 'line', 'circle' afhankelijk van je data
+        type: 'fill',
         source: 'veenweide',
         'source-layer': 'veenweide_laag',
-        paint: {
-            'fill-color': '#88cc88',
-            'fill-opacity': 0.5
-        }
+        paint: { 'fill-color': '#88cc88', 'fill-opacity': 0.5 }
     });
 }
 
 initMap();
 </script>
+
 </body>
 </html>
