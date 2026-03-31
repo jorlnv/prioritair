@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- MapLibre GL CSS -->
-    <link href="https://unpkg.com/maplibre-gl@2.6.1/dist/maplibre-gl.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@2.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
@@ -16,9 +16,9 @@
 <div id="map"></div>
 
 <!-- MapLibre GL JS -->
-<script src="https://unpkg.com/maplibre-gl@2.6.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@2.6.2/dist/maplibre-gl.js"></script>
 <!-- PMTiles loader -->
-<script src="https://unpkg.com/@protomaps/pmtiles@0.12.0/dist/pmtiles.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@protomaps/pmtiles@0.12.0/dist/pmtiles.min.js"></script>
 
 <script>
 async function initMap() {
@@ -41,7 +41,7 @@ async function initMap() {
 
     map.addLayer({
         id: 'veenweide_laag',
-        type: 'fill',  // pas aan als je line/circle data hebt
+        type: 'fill',
         source: 'veenweide',
         'source-layer': 'veenweide_laag',
         paint: {
