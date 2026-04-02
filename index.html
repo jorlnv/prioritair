@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Veenweide Kaart met Layer Control</title>
+<title>Prioritaire Kaart met Layer Control</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- MapLibre CSS -->
@@ -29,7 +29,8 @@
 <div id="layerControl">
     <strong>Layers</strong>
     <label><input type="checkbox" id="toggleVeenweide" checked> Veenweide</label>
-    <!-- Extra layers kunnen hier toegevoegd worden -->
+    <label><input type="checkbox" id ="toggleN2000" checked> N2000 </label>
+    <label><input type="checkbox" id ="toggleBuffer" checked> Bufferstrook N2000 </label>
 </div>
 
 <div id="map"></div>
@@ -71,8 +72,50 @@ async function initMap() {
         type: 'fill',
         source: 'veenweide',
         'source-layer': 'veenweide_laag',
-        paint: { 'fill-color': '#88cc88', 'fill-opacity': 0.5 }
+        paint: { 'fill-color': '#9932CC', 'fill-opacity': 0.5 }
     });
+
+  // Laad N2000 PMTiles
+  const urlN2000 = `${location.protocol}//${location.host}${location.pathname}N2000.pmtiles`;
+  const p2 = new pmtiles.PMTiles(urlN2000);
+  protocol.add(p2);
+  await p2.getHeader();
+  
+  // Voeg N2000 source toe
+  map.addSource('N2000', {
+      type: 'vector',
+      url: `pmtiles://${urlN2000}`
+  });
+  
+  // Voeg N2000 layer toe
+  map.addLayer({
+      id: 'N2000',
+      type: 'fill',  // of 'line' of 'circle', afhankelijk van data
+      source: 'N2000',
+      'source-layer': 'N2000',  // check de layernaam in je PMTiles!
+      paint: { 'fill-color': '#4a86e8', 'fill-opacity': 0.5 }
+  });
+
+  // Laad Buffertstrook PMTiles
+  const urlBufferstrook = `${location.protocol}//${location.host}${location.pathname}Bufferstrook.pmtiles`;
+  const p3 = new pmtiles.PMTiles(urlBufferstrook);
+  protocol.add(p3);
+  await p3.getHeader();
+  
+  // Voeg Buffer source toe
+  map.addSource('Bufferstrook', {
+      type: 'vector',
+      url: `pmtiles://${urlBufferstrook}`
+  });
+  
+  // Voeg Buffer layer toe
+  map.addLayer({
+      id: 'Bufferstrook',
+      type: 'fill',  // of 'line' of 'circle', afhankelijk van data
+      source: 'Bufferstrook',
+      'source-layer': 'Bufferstrook',  // check de layernaam in je PMTiles!
+      paint: { 'fill-color': '#4a86e8', 'fill-opacity': 0.8 }
+  });
 
     // 6. Layer control interactiviteit
     document.getElementById('toggleVeenweide').addEventListener('change', function(e) {
@@ -82,7 +125,20 @@ async function initMap() {
         }
     });
 
-    // Voor meerdere layers kun je hier extra checkboxes toevoegen
+      document.getElementById('toggleN2000').addEventListener('change', function(e) {
+        const visibility = e.target.checked ? 'visible' : 'none';
+        if (map.getLayer('N2000')) {
+            map.setLayoutProperty('N2000', 'visibility', visibility);
+        }
+    });
+  
+      document.getElementById('toggleBufferstrook').addEventListener('change', function(e) {
+          const visibility = e.target.checked ? 'visible' : 'none';
+          if (map.getLayer('Bufferstrook')) {
+              map.setLayoutProperty('Bufferstrook', 'visibility', visibility);
+          }
+      });
+
 }
 
 initMap();
