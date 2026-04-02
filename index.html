@@ -1,63 +1,59 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Veenweide Kaart</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
-    <style>
-        body { margin: 0; padding: 0; }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
-    </style>
+<meta charset="utf-8">
+<title>Veenweide Kaart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Juiste CDN links voor MapLibre + PMTiles -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.css" />
+<style>
+  body { margin: 0; padding: 0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+</style>
 </head>
 <body>
-    <div id="map"></div>
+<div id="map"></div>
 
-    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-    <script src="https://unpkg.com/pmtiles@3.2.0/dist/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pmtiles@4.4.0/dist/pmtiles.min.js"></script>
 
-    <script>
-        // 1. Setup PMTiles Protocol
-        const protocol = new pmtiles.Protocol();
-        maplibregl.addProtocol("pmtiles", protocol.add);
+<script>
+async function initMap() {
+    const map = new maplibregl.Map({
+        container: 'map',
+        style: { version: 8, sources: {}, layers: [] },
+        center: [5.1, 52.1],
+        zoom: 11
+    });
 
-        // 2. Definieer de URL van het bestand (relatief aan de index.html op GitHub)
-        const pmtiles_url = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/veenweide.pmtiles";
+    // Voer PMTiles protocol handler toe
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol('pmtiles', protocol.tile);
 
-        // 3. Initialiseer de kaart met een standaard Carto stijl (zodat je in ieder geval een basiskaart ziet)
-        const map = new maplibregl.Map({
-            container: 'map',
-            style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-            center: [5.1, 52.1],
-            zoom: 8
-        });
+    // Laad je eigen PMTiles bestand — pas pad indien nodig
+    const url = `${location.protocol}//${location.host}${location.pathname}veenweide.pmtiles`;
+    const p = new pmtiles.PMTiles(url);
+    protocol.add(p);
 
-        map.on('load', () => {
-            // 4. Voeg de PMTiles bron toe
-            map.addSource('veenweide_source', {
-                type: 'vector',
-                url: 'pmtiles://' + pmtiles_url
-            });
+    await p.getHeader();
 
-            // 5. Voeg de laag toe
-            map.addLayer({
-                'id': 'veenweide_visual',
-                'type': 'fill',
-                'source': 'veenweide_source',
-                'source-layer': 'veenweide_laag',
-                'paint': {
-                    'fill-color': '#88cc88',
-                    'fill-opacity': 0.5,
-                    'fill-outline-color': '#ffffff'
-                }
-            });
-        });
+    map.addSource('veenweide', {
+        type: 'vector',
+        url: `pmtiles://${url}`
+    });
 
-        // Foutopsporing
-        map.on('error', (e) => {
-            console.error('MapLibre fout:', e);
-        });
-    </script>
+    map.addLayer({
+        id: 'veenweide_laag',
+        type: 'fill',
+        source: 'veenweide',
+        'source-layer': 'veenweide_laag',
+        paint: { 'fill-color': '#88cc88', 'fill-opacity': 0.5 }
+    });
+}
+
+initMap();
+</script>
+
 </body>
 </html>
