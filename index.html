@@ -6,9 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.css" />
+
 <style>
   body { margin:0; padding:0; }
   #map { position:absolute; top:0; bottom:0; width:100%; }
+
   #layerControl {
       position: absolute;
       top: 10px;
@@ -19,9 +21,11 @@
       border-radius: 4px;
       font-family: sans-serif;
   }
+
   #layerControl label { display: block; }
 </style>
 </head>
+
 <body>
 
 <div id="layerControl">
@@ -47,117 +51,130 @@ async function initMap() {
         zoom: 11
     });
 
-    const protocol = new pmtiles.Protocol();
-    maplibregl.addProtocol('pmtiles', protocol.tile);
+    map.on('load', async function() {
 
-    // ========================
-    // VEENWEIDE
-    // ========================
-    const urlVeen = `${location.protocol}//${location.host}${location.pathname}veenweide.pmtiles`;
-    const p1 = new pmtiles.PMTiles(urlVeen);
-    protocol.add(p1);
-    await p1.getHeader();
+        const protocol = new pmtiles.Protocol();
+        maplibregl.addProtocol('pmtiles', protocol.tile);
 
-    map.addSource('veenweide', {
-        type: 'vector',
-        url: `pmtiles://${urlVeen}`
+        // ========================
+        // VEENWEIDE
+        // ========================
+        const urlVeen = `${location.protocol}//${location.host}${location.pathname}veenweide.pmtiles`;
+        const p1 = new pmtiles.PMTiles(urlVeen);
+        protocol.add(p1);
+        await p1.getHeader();
+
+        map.addSource('veenweide', {
+            type: 'vector',
+            url: `pmtiles://${urlVeen}`
+        });
+
+        map.addLayer({
+            id: 'veenweide_laag',
+            type: 'fill',
+            source: 'veenweide',
+            'source-layer': 'veenweide_laag',
+            paint: {
+                'fill-color': '#9932CC',
+                'fill-opacity': 0.5
+            }
+        });
+
+        // ========================
+        // N2000
+        // ========================
+        const urlN2000 = `${location.protocol}//${location.host}${location.pathname}N2000.pmtiles`;
+        const p2 = new pmtiles.PMTiles(urlN2000);
+        protocol.add(p2);
+        await p2.getHeader();
+
+        map.addSource('N2000', {
+            type: 'vector',
+            url: `pmtiles://${urlN2000}`
+        });
+
+        map.addLayer({
+            id: 'N2000',
+            type: 'fill',
+            source: 'N2000',
+            'source-layer': 'N2000',
+            paint: {
+                'fill-color': '#228B22',
+                'fill-opacity': 0.5
+            }
+        });
+
+        // ========================
+        // BUFFERSTROOK
+        // ========================
+        const urlBuffer = `${location.protocol}//${location.host}${location.pathname}Bufferstrook.pmtiles`;
+        const p3 = new pmtiles.PMTiles(urlBuffer);
+        protocol.add(p3);
+        await p3.getHeader();
+
+        map.addSource('Bufferstrook', {
+            type: 'vector',
+            url: `pmtiles://${urlBuffer}`
+        });
+
+        map.addLayer({
+            id: 'Bufferstrook',
+            type: 'fill',
+            source: 'Bufferstrook',
+            'source-layer': 'Bufferstrook',
+            paint: {
+                'fill-color': '#115211',
+                'fill-opacity': 0.8
+            }
+        });
+
+        // ========================
+        // WATERSCHAP (ALLEEN LIJN)
+        // ========================
+        const urlWaterschap = `${location.protocol}//${location.host}${location.pathname}Waterschap.pmtiles`;
+        const p4 = new pmtiles.PMTiles(urlWaterschap);
+        protocol.add(p4);
+        await p4.getHeader();
+
+        map.addSource('Waterschap', {
+            type: 'vector',
+            url: `pmtiles://${urlWaterschap}`
+        });
+
+        map.addLayer({
+            id: 'waterschap_outline',
+            type: 'line',
+            source: 'Waterschap',
+            'source-layer': 'Waterschap',
+            layout: {
+                visibility: 'none' // standaard uit
+            },
+            paint: {
+                'line-color': '#000000',
+                'line-width': 2
+            }
+        });
+
+        // ========================
+        // TOGGLES
+        // ========================
+        document.getElementById('toggleVeenweide').addEventListener('change', e => {
+            map.setLayoutProperty('veenweide_laag', 'visibility', e.target.checked ? 'visible' : 'none');
+        });
+
+        document.getElementById('toggleN2000').addEventListener('change', e => {
+            map.setLayoutProperty('N2000', 'visibility', e.target.checked ? 'visible' : 'none');
+        });
+
+        document.getElementById('toggleBufferstrook').addEventListener('change', e => {
+            map.setLayoutProperty('Bufferstrook', 'visibility', e.target.checked ? 'visible' : 'none');
+        });
+
+        document.getElementById('toggleWaterschap').addEventListener('change', e => {
+            map.setLayoutProperty('waterschap_outline', 'visibility', e.target.checked ? 'visible' : 'none');
+        });
+
     });
-
-    map.addLayer({
-        id: 'veenweide_laag',
-        type: 'fill',
-        source: 'veenweide',
-        'source-layer': 'veenweide_laag',
-        paint: { 'fill-color': '#9932CC', 'fill-opacity': 0.5 }
-    });
-
-    // ========================
-    // N2000
-    // ========================
-    const urlN2000 = `${location.protocol}//${location.host}${location.pathname}N2000.pmtiles`;
-    const p2 = new pmtiles.PMTiles(urlN2000);
-    protocol.add(p2);
-    await p2.getHeader();
-
-    map.addSource('N2000', {
-        type: 'vector',
-        url: `pmtiles://${urlN2000}`
-    });
-
-    map.addLayer({
-        id: 'N2000',
-        type: 'fill',
-        source: 'N2000',
-        'source-layer': 'N2000',
-        paint: { 'fill-color': '#228B22', 'fill-opacity': 0.5 }
-    });
-
-    // ========================
-    // BUFFERSTROOK
-    // ========================
-    const urlBuffer = `${location.protocol}//${location.host}${location.pathname}Bufferstrook.pmtiles`;
-    const p3 = new pmtiles.PMTiles(urlBuffer);
-    protocol.add(p3);
-    await p3.getHeader();
-
-    map.addSource('Bufferstrook', {
-        type: 'vector',
-        url: `pmtiles://${urlBuffer}`
-    });
-
-    map.addLayer({
-        id: 'Bufferstrook',
-        type: 'fill',
-        source: 'Bufferstrook',
-        'source-layer': 'Bufferstrook',
-        paint: { 'fill-color': '#115211', 'fill-opacity': 0.8 }
-    });
-
-    // ========================
-    // WATERSCHAP (outline)
-    // ========================
-    const urlWaterschap = `${location.protocol}//${location.host}${location.pathname}Waterschap.pmtiles`;
-    const p4 = new pmtiles.PMTiles(urlWaterschap);
-    protocol.add(p4);
-    await p4.getHeader();
-
-    map.addSource('Waterschap', {
-        type: 'vector',
-        url: `pmtiles://${urlWaterschap}`
-    });
-
-    map.addLayer({
-        id: 'waterschap_outline',
-        type: 'line',
-        source: 'Waterschap',
-        'source-layer': 'Waterschap',
-        layout: { visibility: 'none' }, // standaard UIT
-        paint: {
-            'line-color': '#000000',
-            'line-width': 2
-        }
-    });
-
-    // ========================
-    // TOGGLES
-    // ========================
-
-    document.getElementById('toggleVeenweide').addEventListener('change', e => {
-        map.setLayoutProperty('veenweide_laag', 'visibility', e.target.checked ? 'visible' : 'none');
-    });
-
-    document.getElementById('toggleN2000').addEventListener('change', e => {
-        map.setLayoutProperty('N2000', 'visibility', e.target.checked ? 'visible' : 'none');
-    });
-
-    document.getElementById('toggleBufferstrook').addEventListener('change', e => {
-        map.setLayoutProperty('Bufferstrook', 'visibility', e.target.checked ? 'visible' : 'none');
-    });
-
-    document.getElementById('toggleWaterschap').addEventListener('change', e => {
-        map.setLayoutProperty('waterschap_outline', 'visibility', e.target.checked ? 'visible' : 'none');
-    });
-
 }
 
 initMap();
