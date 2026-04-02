@@ -31,6 +31,8 @@
     <label><input type="checkbox" id="toggleVeenweide" checked> Veenweide</label>
     <label><input type="checkbox" id ="toggleN2000" checked> N2000 </label>
     <label><input type="checkbox" id ="toggleBuffer" checked> Bufferstrook N2000 </label>
+    <label><input type="checkbox" id ="toggleProvincie" checked> Provinciegrenzen </label>
+    <label><input type="checkbox" id ="toggleWaterschap" checked> Waterschapsgrenzen </label>
 </div>
 
 <div id="map"></div>
@@ -116,7 +118,32 @@ async function initMap() {
       'source-layer': 'Bufferstrook',  // check de layernaam in je PMTiles!
       paint: { 'fill-color': '#115211', 'fill-opacity': 0.8 }
   });
-
+  
+  // Laad Waterschap PMTiles
+  const urlWaterschap = `${location.protocol}//${location.host}${location.pathname}Waterschap.pmtiles`;
+  const p2 = new pmtiles.PMTiles(urlWaterschap);
+  protocol.add(p2);
+  await p2.getHeader();
+  
+  // Voeg Waterschap source toe
+  map.addSource('Waterschap', {
+      type: 'vector',
+      url: `pmtiles://${urlWaterschap}`
+  });
+  
+  // Voeg Waterschap layer toe
+  map.addLayer({
+      id: 'waterschap_outline',
+      type: 'line',
+      source: 'Waterschap',
+      'source-layer': 'Waterschap',
+      layout: {visibility: 'none'},
+      paint: {
+          'line-color': '#000000',
+          'line-width': 2
+      }
+  });
+  
     // 6. Layer control interactiviteit
     document.getElementById('toggleVeenweide').addEventListener('change', function(e) {
         const visibility = e.target.checked ? 'visible' : 'none';
@@ -136,6 +163,13 @@ async function initMap() {
           const visibility = e.target.checked ? 'visible' : 'none';
           if (map.getLayer('Bufferstrook')) {
               map.setLayoutProperty('Bufferstrook', 'visibility', visibility);
+          }
+      });
+
+      document.getElementById('toggleWatwerschap').addEventListener('change', function(e) {
+          const visibility = e.target.checked ? 'visible' : 'none';
+          if (map.getLayer('Waterschap')) {
+              map.setLayoutProperty('Waterschap', 'visibility', visibility);
           }
       });
 
