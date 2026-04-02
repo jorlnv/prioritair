@@ -1,60 +1,63 @@
-import leafmap.maplibregl as lm
 
-# 1. Maak Leafmap map met basemap
-m = lm.Map(
-    style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
-    center=[5.1, 52.1],
-    zoom=11
-)
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Veenweide Kaart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
 
-# 2. Genereer HTML
-html_raw = m.to_html()
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@3.2.0/dist/index.js"></script>
 
-# 3. Voeg PMTiles + layer toe via een script dat pas na map load draait
-pmtiles_bundle = """
-<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pmtiles@4.4.0/dist/pmtiles.min.js"></script>
+    <script>
+        // 1. Setup PMTiles Protocol
+        const protocol = new pmtiles.Protocol();
+        maplibregl.addProtocol("pmtiles", protocol.add);
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const waitMap = setInterval(() => {
-        if (window.map) {
-            clearInterval(waitMap);
+        // 2. Definieer de URL van het bestand (relatief aan de index.html op GitHub)
+        const pmtiles_url = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/veenweide.pmtiles";
 
-            window.map.on("load", async function() {
-                const protocol = new pmtiles.Protocol();
-                maplibregl.addProtocol("pmtiles", protocol.tile);
+        // 3. Initialiseer de kaart met een standaard Carto stijl (zodat je in ieder geval een basiskaart ziet)
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+            center: [5.1, 52.1],
+            zoom: 8
+        });
 
-                const url = window.location.origin + window.location.pathname.replace("index.html","") + "veenweide.pmtiles";
-                const p = new pmtiles.PMTiles(url);
-                protocol.add(p);
-
-                await p.getHeader();
-
-                window.map.addSource("veenweide", {
-                    type: "vector",
-                    url: "pmtiles://" + url
-                });
-
-                window.map.addLayer({
-                    id: "veenweide_laag",
-                    type: "fill",
-                    source: "veenweide",
-                    "source-layer": "veenweide_laag",
-                    paint: { "fill-color": "#88cc88", "fill-opacity": 0.5 }
-                });
+        map.on('load', () => {
+            // 4. Voeg de PMTiles bron toe
+            map.addSource('veenweide_source', {
+                type: 'vector',
+                url: 'pmtiles://' + pmtiles_url
             });
-        }
-    }, 100);
-});
-</script>
-"""
 
-# 4. Injecteer script in HTML (net boven </body>)
-final_html = html_raw.replace("</body>", f"{pmtiles_bundle}\n</body>")
+            // 5. Voeg de laag toe
+            map.addLayer({
+                'id': 'veenweide_visual',
+                'type': 'fill',
+                'source': 'veenweide_source',
+                'source-layer': 'veenweide_laag',
+                'paint': {
+                    'fill-color': '#88cc88',
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': '#ffffff'
+                }
+            });
+        });
 
-# 5. Opslaan
-with open("index.html", "w") as f:
-    f.write(final_html)
-
-print("index.html gegenereerd. Push samen met veenweide.pmtiles naar GitHub Pages.")
+        // Foutopsporing
+        map.on('error', (e) => {
+            console.error('MapLibre fout:', e);
+        });
+    </script>
+</body>
+</html>
