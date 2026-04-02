@@ -1,11 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Veenweide Kaart met Layer Control</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- MapLibre CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.css" />
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+  #layerControl {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1;
+      background: white;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: sans-serif;
+  }
+  #layerControl label { display: block; }
+</style>
+</head>
 <body>
-<div id="controls" style="position:absolute;top:10px;left:10px;z-index:1;background:white;padding:5px;">
-  <label><input type="checkbox" id="toggleVeenweide" checked> Veenweide</label>
+
+<!-- Layer control panel -->
+<div id="layerControl">
+    <strong>Layers</strong>
+    <label><input type="checkbox" id="toggleVeenweide" checked> Veenweide</label>
+    <!-- Extra layers kunnen hier toegevoegd worden -->
 </div>
+
 <div id="map"></div>
+
+<!-- MapLibre JS -->
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.js"></script>
+<!-- PMTiles JS -->
+<script src="https://cdn.jsdelivr.net/npm/pmtiles@4.4.0/dist/pmtiles.min.js"></script>
 
 <script>
 async function initMap() {
+    // 1. Maak map met basemap
     const map = new maplibregl.Map({
         container: 'map',
         style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
@@ -13,20 +49,23 @@ async function initMap() {
         zoom: 11
     });
 
+    // 2. Voeg PMTiles protocol toe
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol('pmtiles', protocol.tile);
 
+    // 3. Laad je PMTiles bestand
     const url = `${location.protocol}//${location.host}${location.pathname}veenweide.pmtiles`;
     const p = new pmtiles.PMTiles(url);
     protocol.add(p);
-
     await p.getHeader();
 
+    // 4. Voeg PMTiles source toe
     map.addSource('veenweide', {
         type: 'vector',
         url: `pmtiles://${url}`
     });
 
+    // 5. Voeg layer toe (polygons)
     map.addLayer({
         id: 'veenweide_laag',
         type: 'fill',
@@ -35,38 +74,15 @@ async function initMap() {
         paint: { 'fill-color': '#88cc88', 'fill-opacity': 0.5 }
     });
 
-    // Layer toggling
+    // 6. Layer control interactiviteit
     document.getElementById('toggleVeenweide').addEventListener('change', function(e) {
         const visibility = e.target.checked ? 'visible' : 'none';
         if (map.getLayer('veenweide_laag')) {
             map.setLayoutProperty('veenweide_laag', 'visibility', visibility);
         }
     });
-}
 
-initMap();
-</script>
-</body>    // Laad je eigen PMTiles bestand
-    const url = `${location.protocol}//${location.host}${location.pathname}veenweide.pmtiles`;
-    const p = new pmtiles.PMTiles(url);
-    protocol.add(p);
-
-    await p.getHeader();
-
-    // Voeg PMTiles source toe
-    map.addSource('veenweide', {
-        type: 'vector',
-        url: `pmtiles://${url}`
-    });
-
-    // Voeg layer toe (polygons)
-    map.addLayer({
-        id: 'veenweide_laag',
-        type: 'fill',
-        source: 'veenweide',
-        'source-layer': 'veenweide_laag',
-        paint: { 'fill-color': '#88cc88', 'fill-opacity': 0.5 }
-    });
+    // Voor meerdere layers kun je hier extra checkboxes toevoegen
 }
 
 initMap();
