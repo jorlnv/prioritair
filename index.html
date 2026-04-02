@@ -775,5 +775,43 @@ mustache/mustache.mjs:
     pymaplibregl(data);
 })();
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pmtiles@4.4.0/dist/pmtiles.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const waitMap = setInterval(() => {
+        if (window.map) {
+            clearInterval(waitMap);
+
+            window.map.on("load", async function() {
+                const protocol = new pmtiles.Protocol();
+                maplibregl.addProtocol("pmtiles", protocol.tile);
+
+                const url = window.location.origin + window.location.pathname.replace("index.html","") + "veenweide.pmtiles";
+                const p = new pmtiles.PMTiles(url);
+                protocol.add(p);
+
+                await p.getHeader();
+
+                window.map.addSource("veenweide", {
+                    type: "vector",
+                    url: "pmtiles://" + url
+                });
+
+                window.map.addLayer({
+                    id: "veenweide_laag",
+                    type: "fill",
+                    source: "veenweide",
+                    "source-layer": "veenweide_laag",
+                    paint: { "fill-color": "#88cc88", "fill-opacity": 0.5 }
+                });
+            });
+        }
+    }, 100);
+});
+</script>
+
 </body>
 </html>
