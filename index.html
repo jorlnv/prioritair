@@ -5,7 +5,6 @@
 <title>Prioritaire Kaart met Layer Control</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- MapLibre CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.css" />
 <style>
   body { margin:0; padding:0; }
@@ -25,26 +24,22 @@
 </head>
 <body>
 
-<!-- Layer control panel -->
 <div id="layerControl">
     <strong>Layers</strong>
     <label><input type="checkbox" id="toggleVeenweide" checked> Veenweide</label>
-    <label><input type="checkbox" id ="toggleN2000" checked> N2000 </label>
-    <label><input type="checkbox" id ="toggleBuffer" checked> Bufferstrook N2000 </label>
-    <label><input type="checkbox" id ="toggleProvincie" checked> Provinciegrenzen </label>
-    <label><input type="checkbox" id ="toggleWaterschap" checked> Waterschapsgrenzen </label>
+    <label><input type="checkbox" id="toggleN2000" checked> N2000</label>
+    <label><input type="checkbox" id="toggleBufferstrook" checked> Bufferstrook N2000</label>
+    <label><input type="checkbox" id="toggleWaterschap"> Waterschapsgrenzen</label>
 </div>
 
 <div id="map"></div>
 
-<!-- MapLibre JS -->
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.js"></script>
-<!-- PMTiles JS -->
 <script src="https://cdn.jsdelivr.net/npm/pmtiles@4.4.0/dist/pmtiles.min.js"></script>
 
 <script>
 async function initMap() {
-    // 1. Maak map met basemap
+
     const map = new maplibregl.Map({
         container: 'map',
         style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
@@ -52,23 +47,22 @@ async function initMap() {
         zoom: 11
     });
 
-    // 2. Voeg PMTiles protocol toe
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol('pmtiles', protocol.tile);
 
-    // 3. Laad je PMTiles bestand
-    const url = `${location.protocol}//${location.host}${location.pathname}veenweide.pmtiles`;
-    const p = new pmtiles.PMTiles(url);
-    protocol.add(p);
-    await p.getHeader();
+    // ========================
+    // VEENWEIDE
+    // ========================
+    const urlVeen = `${location.protocol}//${location.host}${location.pathname}veenweide.pmtiles`;
+    const p1 = new pmtiles.PMTiles(urlVeen);
+    protocol.add(p1);
+    await p1.getHeader();
 
-    // 4. Voeg PMTiles source toe
     map.addSource('veenweide', {
         type: 'vector',
-        url: `pmtiles://${url}`
+        url: `pmtiles://${urlVeen}`
     });
 
-    // 5. Voeg layer toe (polygons)
     map.addLayer({
         id: 'veenweide_laag',
         type: 'fill',
@@ -77,101 +71,92 @@ async function initMap() {
         paint: { 'fill-color': '#9932CC', 'fill-opacity': 0.5 }
     });
 
-  // Laad N2000 PMTiles
-  const urlN2000 = `${location.protocol}//${location.host}${location.pathname}N2000.pmtiles`;
-  const p2 = new pmtiles.PMTiles(urlN2000);
-  protocol.add(p2);
-  await p2.getHeader();
-  
-  // Voeg N2000 source toe
-  map.addSource('N2000', {
-      type: 'vector',
-      url: `pmtiles://${urlN2000}`
-  });
-  
-  // Voeg N2000 layer toe
-  map.addLayer({
-      id: 'N2000',
-      type: 'fill',  // of 'line' of 'circle', afhankelijk van data
-      source: 'N2000',
-      'source-layer': 'N2000',  // check de layernaam in je PMTiles!
-      paint: { 'fill-color': '#228B22', 'fill-opacity': 0.5 }
-  });
+    // ========================
+    // N2000
+    // ========================
+    const urlN2000 = `${location.protocol}//${location.host}${location.pathname}N2000.pmtiles`;
+    const p2 = new pmtiles.PMTiles(urlN2000);
+    protocol.add(p2);
+    await p2.getHeader();
 
-  // Laad Buffertstrook PMTiles
-  const urlBufferstrook = `${location.protocol}//${location.host}${location.pathname}Bufferstrook.pmtiles`;
-  const p3 = new pmtiles.PMTiles(urlBufferstrook);
-  protocol.add(p3);
-  await p3.getHeader();
-  
-  // Voeg Buffer source toe
-  map.addSource('Bufferstrook', {
-      type: 'vector',
-      url: `pmtiles://${urlBufferstrook}`
-  });
-  
-  // Voeg Buffer layer toe
-  map.addLayer({
-      id: 'Bufferstrook',
-      type: 'fill',  // of 'line' of 'circle', afhankelijk van data
-      source: 'Bufferstrook',
-      'source-layer': 'Bufferstrook',  // check de layernaam in je PMTiles!
-      paint: { 'fill-color': '#115211', 'fill-opacity': 0.8 }
-  });
-  
-  // Laad Waterschap PMTiles
-  const urlWaterschap = `${location.protocol}//${location.host}${location.pathname}Waterschap.pmtiles`;
-  const p2 = new pmtiles.PMTiles(urlWaterschap);
-  protocol.add(p2);
-  await p2.getHeader();
-  
-  // Voeg Waterschap source toe
-  map.addSource('Waterschap', {
-      type: 'vector',
-      url: `pmtiles://${urlWaterschap}`
-  });
-  
-  // Voeg Waterschap layer toe
-  map.addLayer({
-      id: 'waterschap_outline',
-      type: 'line',
-      source: 'Waterschap',
-      'source-layer': 'Waterschap',
-      layout: {visibility: 'none'},
-      paint: {
-          'line-color': '#000000',
-          'line-width': 2
-      }
-  });
-  
-    // 6. Layer control interactiviteit
-    document.getElementById('toggleVeenweide').addEventListener('change', function(e) {
-        const visibility = e.target.checked ? 'visible' : 'none';
-        if (map.getLayer('veenweide_laag')) {
-            map.setLayoutProperty('veenweide_laag', 'visibility', visibility);
+    map.addSource('N2000', {
+        type: 'vector',
+        url: `pmtiles://${urlN2000}`
+    });
+
+    map.addLayer({
+        id: 'N2000',
+        type: 'fill',
+        source: 'N2000',
+        'source-layer': 'N2000',
+        paint: { 'fill-color': '#228B22', 'fill-opacity': 0.5 }
+    });
+
+    // ========================
+    // BUFFERSTROOK
+    // ========================
+    const urlBuffer = `${location.protocol}//${location.host}${location.pathname}Bufferstrook.pmtiles`;
+    const p3 = new pmtiles.PMTiles(urlBuffer);
+    protocol.add(p3);
+    await p3.getHeader();
+
+    map.addSource('Bufferstrook', {
+        type: 'vector',
+        url: `pmtiles://${urlBuffer}`
+    });
+
+    map.addLayer({
+        id: 'Bufferstrook',
+        type: 'fill',
+        source: 'Bufferstrook',
+        'source-layer': 'Bufferstrook',
+        paint: { 'fill-color': '#115211', 'fill-opacity': 0.8 }
+    });
+
+    // ========================
+    // WATERSCHAP (outline)
+    // ========================
+    const urlWaterschap = `${location.protocol}//${location.host}${location.pathname}Waterschap.pmtiles`;
+    const p4 = new pmtiles.PMTiles(urlWaterschap);
+    protocol.add(p4);
+    await p4.getHeader();
+
+    map.addSource('Waterschap', {
+        type: 'vector',
+        url: `pmtiles://${urlWaterschap}`
+    });
+
+    map.addLayer({
+        id: 'waterschap_outline',
+        type: 'line',
+        source: 'Waterschap',
+        'source-layer': 'Waterschap',
+        layout: { visibility: 'none' }, // standaard UIT
+        paint: {
+            'line-color': '#000000',
+            'line-width': 2
         }
     });
 
-      document.getElementById('toggleN2000').addEventListener('change', function(e) {
-        const visibility = e.target.checked ? 'visible' : 'none';
-        if (map.getLayer('N2000')) {
-            map.setLayoutProperty('N2000', 'visibility', visibility);
-        }
-    });
-  
-      document.getElementById('toggleBufferstrook').addEventListener('change', function(e) {
-          const visibility = e.target.checked ? 'visible' : 'none';
-          if (map.getLayer('Bufferstrook')) {
-              map.setLayoutProperty('Bufferstrook', 'visibility', visibility);
-          }
-      });
+    // ========================
+    // TOGGLES
+    // ========================
 
-      document.getElementById('toggleWatwerschap').addEventListener('change', function(e) {
-          const visibility = e.target.checked ? 'visible' : 'none';
-          if (map.getLayer('Waterschap')) {
-              map.setLayoutProperty('Waterschap', 'visibility', visibility);
-          }
-      });
+    document.getElementById('toggleVeenweide').addEventListener('change', e => {
+        map.setLayoutProperty('veenweide_laag', 'visibility', e.target.checked ? 'visible' : 'none');
+    });
+
+    document.getElementById('toggleN2000').addEventListener('change', e => {
+        map.setLayoutProperty('N2000', 'visibility', e.target.checked ? 'visible' : 'none');
+    });
+
+    document.getElementById('toggleBufferstrook').addEventListener('change', e => {
+        map.setLayoutProperty('Bufferstrook', 'visibility', e.target.checked ? 'visible' : 'none');
+    });
+
+    document.getElementById('toggleWaterschap').addEventListener('change', e => {
+        map.setLayoutProperty('waterschap_outline', 'visibility', e.target.checked ? 'visible' : 'none');
+    });
 
 }
 
