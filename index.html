@@ -222,18 +222,22 @@ async function initMap() {
         // --- Hover events ---
 
         // Hover voor de stallen (Alleen vanaf zoom 6)
+        // Hover voor de stallen (PAS VANAF zoom 6 EN DIEPER)
         map.on('mousemove', 'stallen_layer', (e) => {
-            if (map.getZoom() < 6) {
+            const currentZoom = map.getZoom();
+
+            // Als we minder ver zijn ingezoomd dan 6: ABSOLUUT GEEN HOVER
+            if (currentZoom < 6) {
                 map.getCanvas().style.cursor = '';
                 popup.remove();
-                return;
+                return; // Stop de functie hier direct
             }
             
+            // Pas hieronder begint de hover-functionaliteit
             map.getCanvas().style.cursor = 'pointer';
             
             const props = e.features[0].properties;
             const coordinates = e.features[0].geometry.coordinates.slice();
-            
             const label = `${props.VRAAGOMSCHRIJVING || 'Stal'} - ${props.GEM_AANTAL_DIEREN || 0} dieren, emissie ${props.Emissie || 0} kg NH3`;
             
             popup.setLngLat(coordinates)
