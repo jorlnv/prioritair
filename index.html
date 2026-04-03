@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="utf-8">
-    <title>Prioritaire Kaart</title>
+    <title>Prioritaire Kaart - Volledige Versie</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.css" />
     <style>
@@ -10,57 +10,26 @@
         #map { position:absolute; top:0; bottom:0; width:100%; }
         
         #layerControl {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            z-index: 10;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
+            position: absolute; top: 15px; left: 15px; z-index: 10;
+            background: white; padding: 15px; border-radius: 8px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             box-shadow: 0 0 20px rgba(0,0,0,0.15);
-            max-width: 260px;
-            max-height: 90vh;
-            overflow-y: auto;
+            max-width: 260px; max-height: 90vh; overflow-y: auto;
         }
 
         #layerControl strong { display: block; margin-bottom: 10px; font-size: 1.1em; }
-        
-        #layerControl label { 
-            display: flex; 
-            align-items: center; 
-            cursor: pointer; 
-            margin-bottom: 8px; 
-            font-size: 0.9em;
-        }
-
+        #layerControl label { display: flex; align-items: center; cursor: pointer; margin-bottom: 8px; font-size: 0.9em; }
         #layerControl input { margin-right: 10px; }
 
-        .color-box {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            margin-right: 10px;
-            border: 1px solid rgba(0,0,0,0.2);
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
+        .color-box { display: inline-block; width: 14px; height: 14px; margin-right: 10px; border: 1px solid rgba(0,0,0,0.2); flex-shrink: 0; }
+        .circle { border-radius: 50%; }
+        .rect { border-radius: 2px; }
 
-        .legend-sub-item {
-            margin-left: 28px;
-            margin-bottom: 5px;
-            font-size: 0.85em;
-            color: #555;
-            display: flex;
-            align-items: center;
-        }
+        .legend-sub-item { margin-left: 28px; margin-bottom: 5px; font-size: 0.85em; color: #555; display: flex; align-items: center; }
         
         .maplibregl-popup-content {
-            max-width: 200px;
-            font-size: 11px;
-            line-height: 1.4;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 220px; font-size: 11px; line-height: 1.4; border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 8px;
         }
 
         hr { border: 0; border-top: 1px solid #eee; margin: 10px 0; }
@@ -69,35 +38,25 @@
 <body>
 
 <div id="layerControl">
-    <strong>Kaartlagen</strong>
-    
-    <label><input type="checkbox" id="toggleN2000" checked> <span class="color-box" style="background: #228B22;"></span> N2000</label>
-    <label><input type="checkbox" id="toggleBufferstrook" checked> <span class="color-box" style="background: #115211;"></span> Bufferstrook N2000</label>
-    <label><input type="checkbox" id="toggleNNN"> <span class="color-box" style="background: #2BA172;"></span> NNN </label>
-    <hr>
-    <label><input type="checkbox" id="toggleVeenweide" checked> <span class="color-box" style="background: #9932CC;"></span> Veenweide</label>
-    <label><input type="checkbox" id="toggleGWB" checked> <span class="color-box" style="background: #C1A81E;"></span> Grondwaterbescherming</label>
-    <label><input type="checkbox" id="toggleBeekdal" checked> <span class="color-box" style="background: #1D405D;"></span> Beekdalen</label>
-    <label><input type="checkbox" id="toggleVogelbescherming" checked> <span class="color-box" style="background: #8B4513;"></span> Vogelbescherming</label>
+    <strong>Natuur & Water</strong>
+    <label><input type="checkbox" id="toggleN2000" checked> <span class="color-box rect" style="background: #228B22;"></span> N2000</label>
+    <label><input type="checkbox" id="toggleBufferstrook" checked> <span class="color-box rect" style="background: #115211;"></span> Bufferstrook N2000</label>
+    <label><input type="checkbox" id="toggleNNN"> <span class="color-box rect" style="background: #2BA172;"></span> NNN</label>
+    <label><input type="checkbox" id="toggleVeenweide" checked> <span class="color-box rect" style="background: #9932CC;"></span> Veenweide</label>
+    <label><input type="checkbox" id="toggleGWB" checked> <span class="color-box rect" style="background: #C1A81E;"></span> Grondwater</label>
     
     <hr>
-    
-    <label><input type="checkbox" id="toggleStallen"> <strong>Stallen (per type)</strong></label>
-    <div class="legend-sub-item"><span class="color-box" style="background: #233C93;"></span> Rundvee</div>
-    <div class="legend-sub-item"><span class="color-box" style="background: #BC8515;"></span> Varkens</div>
-    <div class="legend-sub-item"><span class="color-box" style="background: #B014AD;"></span> Kippen</div>
-    <div class="legend-sub-item"><span class="color-box" style="background: #cccccc;"></span> Overig</div>
+    <strong>Landbouw</strong>
+    <label><input type="checkbox" id="toggleStallen"> <strong>Stallen (Type)</strong></label>
+    <div class="legend-sub-item"><span class="color-box circle" style="background: #233C93;"></span> Rundvee</div>
+    <div class="legend-sub-item"><span class="color-box circle" style="background: #BC8515;"></span> Varkens</div>
+    <div class="legend-sub-item"><span class="color-box circle" style="background: #B014AD;"></span> Kippen</div>
 
     <hr>
-    <label><input type="checkbox" id="toggleWoningbouw"> <span class="color-box" style="background: #A6329C;"></span> Grootschalige woningbouwprojecten</label>
+    <strong>Bouw</strong>
+    <label><input type="checkbox" id="toggleWoningbouw"> <span class="color-box rect" style="background: #A6329C;"></span> Woningbouwprojecten</label>
 
     <hr>
-    
-    <label><input type="checkbox" id="toggleWaterschap"> <span class="color-box" style="border: 2px solid #333; background: transparent;"></span> Waterschapsgrenzen</label>
-    <label><input type="checkbox" id="toggleProvincie"> <span class="color-box" style="border: 2px solid #666; background: transparent;"></span> Provinciegrenzen</label>
-    
-    <hr>
-    
     <label><input type="checkbox" id="toggleBaseMap" checked> Achtergrondkaart</label>
 </div>
 
@@ -111,10 +70,7 @@ const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
 
 async function initMap() {
-    const popup = new maplibregl.Popup({
-        closeButton: false,
-        closeOnClick: false
-    });
+    const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
     
     const map = new maplibregl.Map({
         container: 'map',
@@ -124,182 +80,84 @@ async function initMap() {
     });
 
     map.on('load', async () => {
-        // Standaard labels van de basiskaart uitzetten voor een rustig beeld
+        // Basis labels uit
         map.getStyle().layers.forEach((layer) => {
-            if (layer.type === 'symbol') {
-                map.setLayoutProperty(layer.id, 'visibility', 'none');
-            }
+            if (layer.type === 'symbol') map.setLayoutProperty(layer.id, 'visibility', 'none');
         });
 
         const basePath = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
 
-        // Algemene functie om PMTiles lagen toe te voegen
         async function addPmtilesLayer(id, fileName, sourceLayer, type, paint, visible = 'visible') {
             const url = basePath + fileName;
-            const p = new pmtiles.PMTiles(url);
-            protocol.add(p);
-            
-            map.addSource(id, {
-                type: 'vector',
-                url: `pmtiles://${url}`
-            });
-
+            protocol.add(new pmtiles.PMTiles(url));
+            map.addSource(id, { type: 'vector', url: `pmtiles://${url}` });
             map.addLayer({
-                id: id + '_layer',
-                type: type,
-                source: id,
-                'source-layer': sourceLayer,
-                layout: { 'visibility': visible },
-                paint: paint
+                id: id + '_layer', type: type, source: id, 'source-layer': sourceLayer,
+                layout: { 'visibility': visible }, paint: paint
             });
         }
 
-        // --- Data Lagen Inladen ---
+        // --- Lagen laden ---
+        await addPmtilesLayer('n2000', 'N2000.pmtiles', 'N2000', 'fill', { 'fill-color': '#228B22', 'fill-opacity': 0.4 });
+        await addPmtilesLayer('bufferstrook', 'bufferstrook.pmtiles', 'bufferstrook', 'fill', { 'fill-color': '#115211', 'fill-opacity': 0.6 });
+        await addPmtilesLayer('nnn', 'NNN.pmtiles', 'NNN', 'fill', { 'fill-color': '#2BA172', 'fill-opacity': 0.6 }, 'none');
+        await addPmtilesLayer('veenweide', 'veenweide.pmtiles', 'veenweide_laag', 'fill', { 'fill-color': '#9932CC', 'fill-opacity': 0.4 });
+        await addPmtilesLayer('gwb', 'GWB.pmtiles', 'GWB', 'fill', { 'fill-color': '#C1A81E', 'fill-opacity': 0.6 });
         
-        await addPmtilesLayer('veenweide', 'veenweide.pmtiles', 'veenweide_laag', 'fill', {
-            'fill-color': '#9932CC', 'fill-opacity': 0.4
-        });
-
-        await addPmtilesLayer('n2000', 'N2000.pmtiles', 'N2000', 'fill', {
-            'fill-color': '#228B22', 'fill-opacity': 0.4
-        });
-
-        await addPmtilesLayer('bufferstrook', 'bufferstrook.pmtiles', 'bufferstrook', 'fill', {
-            'fill-color': '#115211', 'fill-opacity': 0.6
-        });
-
-        await addPmtilesLayer('NNN', 'NNN.pmtiles', 'NNN', 'fill', {
-            'fill-color': '#2BA172', 'fill-opacity': 0.6
-        }, 'none');
-
-        await addPmtilesLayer('gwb', 'GWB.pmtiles', 'GWB', 'fill', {
-            'fill-color': '#C1A81E', 'fill-opacity': 0.6
-        });
-
-        await addPmtilesLayer('beekdal', 'Beekdalen.pmtiles', 'Beekdalen', 'fill', {
-            'fill-color': '#1D405D', 'fill-opacity': 0.6
-        });
-
-        await addPmtilesLayer('vogelbescherming', 'Vogelbeschermingsgebied.pmtiles', 'Vogelbeschermingsgebied', 'fill', {
-            'fill-color': '#8B4513', 'fill-opacity': 0.6
-        });
-
-        await addPmtilesLayer('woningbouw', 'Woningbouw.pmtiles', 'Woningbouw', 'fill', {
-            'fill-color': '#A6329C', 'fill-opacity': 0.6
-        }, 'none');
+        await addPmtilesLayer('woningbouw', 'Woningbouw.pmtiles', 'Woningbouw', 'fill', { 'fill-color': '#A6329C', 'fill-opacity': 0.6 }, 'none');
         
-        // Stallen met data-driven styling (kleur per type en radius per zoom)
         await addPmtilesLayer('stallen', 'BAB.pmtiles', 'BAB', 'circle', {
-            'circle-color': [
-                'match', ['get', 'VRAAGOMSCHRIJVING'],
-                'HUISVESTING RUNDVEE', '#233C93',
-                'HUISVESTING VARKENS', '#BC8515',
-                'HUISVESTING KIPPEN', '#B014AD',
-                '#cccccc' 
-            ],
-            'circle-radius': [
-                'interpolate', ['linear'], ['zoom'],
-                10, 3,
-                15, 12
-            ],
-            'circle-stroke-width': 1,
-            'circle-stroke-color': '#fff'
+            'circle-color': ['match', ['get', 'VRAAGOMSCHRIJVING'],
+                'HUISVESTING RUNDVEE', '#233C93', 'HUISVESTING VARKENS', '#BC8515', 'HUISVESTING KIPPEN', '#B014AD', '#cccccc'],
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 3, 15, 12],
+            'circle-stroke-width': 1, 'circle-stroke-color': '#fff'
         }, 'none');
 
-        await addPmtilesLayer('waterschap', 'Waterschap.pmtiles', 'Waterschap', 'line', {
-            'line-color': '#333', 'line-width': 1.5
-        }, 'none');
+        // --- HOVER LOGICA ---
 
-        await addPmtilesLayer('provincie', 'Provincies.pmtiles', 'Provincies', 'line', {
-            'line-color': '#666', 'line-width': 1.5
-        }, 'none');
+        // STALLEN: Werkt alleen vanaf zoom 6 en dieper
+        map.on('mousemove', 'stallen_layer', (e) => {
+            if (map.getZoom() < 6) {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+                return;
+            }
+            map.getCanvas().style.cursor = 'pointer';
+            const p = e.features[0].properties;
+            const content = `${p.VRAAGOMSCHRIJVING || 'Stal'} - ${p.GEM_AANTAL_DIEREN || 0} dieren, emissie ${p.Emissie || 0} kg NH3`;
+            popup.setLngLat(e.features[0].geometry.coordinates.slice()).setHTML(content).addTo(map);
+        });
 
-        // --- Toggle Functionaliteit ---
-        const setupToggle = (elementId, layerId) => {
-            const el = document.getElementById(elementId);
+        // WONINGBOUW: Werkt altijd zodra de laag aan staat
+        map.on('mousemove', 'woningbouw_layer', (e) => {
+            map.getCanvas().style.cursor = 'pointer';
+            const p = e.features[0].properties;
+            const content = `<strong>${p.Name || 'Naam onbekend'}</strong><br>Plan: ${p.Plannaam || 'Onbekend'}`;
+            popup.setLngLat(e.lngLat).setHTML(content).addTo(map);
+        });
+
+        // Mouseleave events
+        map.on('mouseleave', 'stallen_layer', () => { map.getCanvas().style.cursor = ''; popup.remove(); });
+        map.on('mouseleave', 'woningbouw_layer', () => { map.getCanvas().style.cursor = ''; popup.remove(); });
+
+        // --- TOGGLES ---
+        const layers = ['N2000', 'Bufferstrook', 'NNN', 'Veenweide', 'GWB', 'Stallen', 'Woningbouw'];
+        layers.forEach(id => {
+            const el = document.getElementById(`toggle${id}`);
             if (el) {
                 el.addEventListener('change', (e) => {
-                    map.setLayoutProperty(layerId, 'visibility', e.target.checked ? 'visible' : 'none');
+                    map.setLayoutProperty(id.toLowerCase() + '_layer', 'visibility', e.target.checked ? 'visible' : 'none');
                 });
             }
-        };
+        });
 
-        // Koppel alle checkboxes aan de juiste lagen
-        setupToggle('toggleVeenweide', 'veenweide_layer');
-        setupToggle('toggleN2000', 'n2000_layer');
-        setupToggle('toggleBufferstrook', 'bufferstrook_layer');
-        setupToggle('toggleGWB', 'gwb_layer');
-        setupToggle('toggleBeekdal', 'beekdal_layer');
-        setupToggle('toggleVogelbescherming', 'vogelbescherming_layer');
-        setupToggle('toggleStallen', 'stallen_layer');
-        setupToggle('toggleWaterschap', 'waterschap_layer');
-        setupToggle('toggleProvincie', 'provincie_layer');
-        setupToggle('toggleNNN', 'NNN_layer');
-        setupToggle('toggleWoningbouw', 'woningbouw_layer');
-
-
-        // Achtergrondkaart toggle (beïnvloedt alle lagen die NIET door ons zijn toegevoegd)
         document.getElementById('toggleBaseMap').addEventListener('change', (e) => {
-            const visibility = e.target.checked ? 'visible' : 'none';
-            map.getStyle().layers.forEach((layer) => {
-                if (!layer.id.endsWith('_layer')) {
-                    map.setLayoutProperty(layer.id, 'visibility', visibility);
-                }
-            });
+            const vis = e.target.checked ? 'visible' : 'none';
+            map.getStyle().layers.forEach(l => { if (!l.id.endsWith('_layer')) map.setLayoutProperty(l.id, 'visibility', vis); });
         });
-        
-        // --- HOVER VOOR STALLEN ---
-        map.on('mousemove', 'stallen_layer', (e) => {
-            if (map.getZoom() > 14) return; 
-        
-            map.getCanvas().style.cursor = 'pointer';
-            const props = e.features[0].properties;
-            
-            // Gebruik e.lngLat in plaats van geometry coordinates voor stabiliteit
-            const huisvestingInfo = props.VRAAGOMSCHRIJVING || 'Onbekend';
-            const emissieInfo = props.Emissie || 0;
-            const aantalDieren = props.GEM_AANTAL_DIEREN || 0;
-        
-            const popupLabel = `${huisvestingInfo} - ${aantalDieren} dieren, emissie ${emissieInfo} kg NH3`;
-            
-            popup.setLngLat(e.lngLat)
-                .setHTML(`<div class="popup-content">${popupLabel}</div>`)
-                .addTo(map);    
-        });
-        
-        map.on('mouseleave', 'stallen_layer', () => {
-            map.getCanvas().style.cursor = '';
-            popup.remove();
-        });
-        
-        // --- HOVER VOOR WONINGBOUW ---
-        map.on('mousemove', 'woningbouw_layer', (e) => {
-            // Let op: deze staat nu op zoom 10. Pas aan naar 8 als je hem eerder wilt zien.
-            if (map.getZoom() > 8) return; 
-        
-            map.getCanvas().style.cursor = 'pointer';
-            const props = e.features[0].properties;
-            
-            const Name = props.Name || 'Onbekend';
-            const PlanName = props.Plannaam || 'Onbekend';
-        
-            // Tip: In je code stond "PlanName dieren", ik heb er "Project: PlanName" van gemaakt
-            const popupLabel = `<strong>${Name}</strong><br>Project: ${PlanName}`;
-            
-            popup.setLngLat(e.lngLat)
-                .setHTML(`<div class="popup-content">${popupLabel}</div>`)
-                .addTo(map);    
-        });
-        
-        map.on('mouseleave', 'woningbouw_layer', () => {
-            map.getCanvas().style.cursor = '';
-            popup.remove();
-        });
-        });
-    }
-
+    });
+}
 initMap();
 </script>
-
 </body>
 </html>
