@@ -42,7 +42,7 @@
             height: 14px;
             margin-right: 10px;
             border: 1px solid rgba(0,0,0,0.2);
-            border-radius: 3px;
+            border-radius: 50%;
             flex-shrink: 0;
         }
 
@@ -53,6 +53,14 @@
             color: #555;
             display: flex;
             align-items: center;
+        }
+        
+        .maplibregl-popup-content {
+            max-width: 200px;
+            font-size: 11px;
+            line-height: 1.4;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         hr { border: 0; border-top: 1px solid #eee; margin: 10px 0; }
@@ -72,7 +80,7 @@
     
     <hr>
     
-    <label><input type="checkbox" id="toggleStallen" checked> <strong>Stallen (per type)</strong></label>
+    <label><input type="checkbox" id="toggleStallen"> <strong>Stallen (per type)</strong></label>
     <div class="legend-sub-item"><span class="color-box" style="background: #233C93;"></span> Rundvee</div>
     <div class="legend-sub-item"><span class="color-box" style="background: #BC8515;"></span> Varkens</div>
     <div class="legend-sub-item"><span class="color-box" style="background: #B014AD;"></span> Kippen</div>
