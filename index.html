@@ -30,6 +30,10 @@
     <label><input type="checkbox" id="toggleN2000" checked> N2000</label>
     <label><input type="checkbox" id="toggleBufferstrook" checked> Bufferstrook N2000</label>
     <label><input type="checkbox" id="toggleWaterschap"> Waterschapsgrenzen</label>
+    <label><input type="checkbox" id="toggleProvincie"> Provinciegrenzen </label>
+    <label><input type="checkbox" id="toggleGWB" checked> Grondwaterbeschermingsgebied </label>
+    <label><input type="checkbox" id="toggleBeekdal" checked> Beekdalen </label>
+    <label><input type="checkbox" id="toggleVogelbescherming" checked> Vogelbescherminsggebieden </label>
 </div>
 
 <div id="map"></div>
@@ -98,7 +102,31 @@ async function initMap() {
         await addPmtilesLayer('waterschap', 'Waterschap.pmtiles', 'Waterschap', 'line', {
             'line-color': '#333',
             'line-width': 1.5
-        }, 'none'); // Standaard uit volgens je HTML
+        }, 'none'); 
+
+        // 5. Provinciegrenzen (Lijnen bovenop)
+        await addPmtilesLayer('provincie', 'Provincies.pmtiles', 'Provincies', 'line', {
+            'line-color': '#333',
+            'line-width': 1.5
+        }, 'none'); 
+
+        // 6. GWB
+        await addPmtilesLayer('GWB', 'GWB.pmtiles', 'GWB', 'fill', {
+            'fill-color': '#C1A81E',
+            'fill-opacity': 0.6
+        });
+
+        // 7. Beekdal
+        await addPmtilesLayer('beekdal', 'Beekdalen.pmtiles', 'Beekdal', 'fill', {
+            'fill-color': '#1D405D',
+            'fill-opacity': 0.6
+        });
+
+          // 8. Vogelbeschermingsgebied
+        await addPmtilesLayer('vogelbeschermingsgebied', 'Vogelbeschermingsgebied.pmtiles', 'Vogelbeschermingsgebied', 'fill', {
+            'fill-color': '#8B4513',
+            'fill-opacity': 0.6
+        });
 
         // --- Toggle Logic ---
         const setupToggle = (elementId, layerId) => {
@@ -111,6 +139,11 @@ async function initMap() {
         setupToggle('toggleN2000', 'n2000_layer');
         setupToggle('toggleBufferstrook', 'bufferstrook_layer');
         setupToggle('toggleWaterschap', 'waterschap_layer');
+        setupToggle('toggleProvincie', 'provincielayer');
+        setupToggle('toggleGWB', 'GWB_layer');
+        setupToggle('toggleBeekdal', 'beekdal_layer');
+        setupToggle('toggleVogelbeschermingsgebied', 'vogelbeschermingsgebied_layer');
+
     });
 }
 
