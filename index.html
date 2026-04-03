@@ -87,7 +87,9 @@
     <div class="legend-sub-item"><span class="color-box" style="background: #BC8515;"></span> Varkens</div>
     <div class="legend-sub-item"><span class="color-box" style="background: #B014AD;"></span> Kippen</div>
     <div class="legend-sub-item"><span class="color-box" style="background: #cccccc;"></span> Overig</div>
-    <label><input type="checkbox" id="toggleWoningbouw"> <strong>Grootschalige woningbouwprojecten</strong></label>
+
+    <hr>
+    <label><input type="checkbox" id="toggleWoningbouw">Grootschalige woningbouwprojecten</label>
 
     <hr>
     
@@ -182,7 +184,7 @@ async function initMap() {
             'fill-color': '#8B4513', 'fill-opacity': 0.6
         });
 
-        await addPmtilesLayer('Woningbouw', 'Woningbouw.pmtiles', 'Woningbouw', 'fill', {
+        await addPmtilesLayer('woningbouw', 'Woningbouw.pmtiles', 'Woningbouw', 'fill', {
             'fill-color': '#A6329C', 'fill-opacity': 0.6
         }, 'none');
         
@@ -233,7 +235,7 @@ async function initMap() {
         setupToggle('toggleWaterschap', 'waterschap_layer');
         setupToggle('toggleProvincie', 'provincie_layer');
         setupToggle('toggleNNN', 'NNN_layer');
-        setupToggle('toggleWoningbouw', 'Woningbouw_layer');
+        setupToggle('toggleWoningbouw', 'woningbouw_layer');
 
 
         // Achtergrondkaart toggle (beïnvloedt alle lagen die NIET door ons zijn toegevoegd)
