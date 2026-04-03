@@ -66,6 +66,10 @@
     
     <hr>
     
+    <label><input type="checkbox" id="toggleStallen"> <span class="color-box" style="border: 2px solid #333; background: transparent;"></span> Stallen </label>
+    
+    <hr>
+    
     <label><input type="checkbox" id="toggleBaseMap" checked> Achtergrondkaart</label>
 </div>
 
@@ -151,6 +155,31 @@ async function initMap() {
             'line-color': '#666', 'line-width': 1.5
         }, 'none');
 
+        await addPmtilesLayer('stallen', 'BAB.pmtiles', 'BAB_laag', 'circle', {
+            // 1. Kleur afhankelijk van kolom_X
+            'circle-color': [
+                'match',
+                ['get', 'VRAAGOMSCHRIJVING'],
+                'HUISVESTING RUNDVEE', '#233C93', // Rood voor A
+                'HUISVESTING VARKENS', '#BC8515', // Groen voor B
+                'HUISVESTING KIPPEN', '#B014AD', // Groen voor B
+                '#cccccc'                 // Grijs als fallback
+            ],
+            
+            // 2. Radius die meeschaalt met de zoom
+            // Hier zeggen we: op zoom 10 is de radius 3px, op zoom 15 is de radius 15px
+            'circle-radius': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                10, 3,
+                15, 15
+            ],
+            
+            'circle-stroke-width': 1,
+            'circle-stroke-color': '#fff'
+        });
+
         // --- Toggle Logic ---
         const setupToggle = (elementId, layerId) => {
             const el = document.getElementById(elementId);
@@ -169,6 +198,8 @@ async function initMap() {
         setupToggle('toggleVogelbescherming', 'vogelbescherming_layer');
         setupToggle('toggleWaterschap', 'waterschap_layer');
         setupToggle('toggleProvincie', 'provincie_layer');
+        setupToggle('toggleProvincie', 'provincie_layer');
+        setupToggle('toggleStallen', 'stallen_layer');
 
         // Achtergrondkaart toggle (zonder onze eigen lagen te verbergen)
         document.getElementById('toggleBaseMap').addEventListener('change', (e) => {
