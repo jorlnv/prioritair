@@ -87,6 +87,7 @@
     <div class="legend-sub-item"><span class="color-box" style="background: #BC8515;"></span> Varkens</div>
     <div class="legend-sub-item"><span class="color-box" style="background: #B014AD;"></span> Kippen</div>
     <div class="legend-sub-item"><span class="color-box" style="background: #cccccc;"></span> Overig</div>
+    <label><input type="checkbox" id="toggleWoningbouw"> <strong>Grootschalige woningbouwprojecten</strong></label>
 
     <hr>
     
@@ -181,6 +182,10 @@ async function initMap() {
             'fill-color': '#8B4513', 'fill-opacity': 0.6
         });
 
+        await addPmtilesLayer('Woningbouw', 'Woningbouw.pmtiles', 'Woningbouw', 'fill', {
+            'fill-color': '#A6329C', 'fill-opacity': 0.6
+        }, 'none');
+        
         // Stallen met data-driven styling (kleur per type en radius per zoom)
         await addPmtilesLayer('stallen', 'BAB.pmtiles', 'BAB', 'circle', {
             'circle-color': [
@@ -228,6 +233,8 @@ async function initMap() {
         setupToggle('toggleWaterschap', 'waterschap_layer');
         setupToggle('toggleProvincie', 'provincie_layer');
         setupToggle('toggleNNN', 'NNN_layer');
+        setupToggle('toggleWoningbouw', 'Woningbouw_layer');
+
 
         // Achtergrondkaart toggle (beïnvloedt alle lagen die NIET door ons zijn toegevoegd)
         document.getElementById('toggleBaseMap').addEventListener('change', (e) => {
@@ -267,6 +274,37 @@ async function initMap() {
         
         // Verwijder de popup als de muis de stal verlaat
         map.on('mouseleave', 'stallen_layer', () => {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+        });
+
+        map.on('mousemove', 'woningbouw_layer', (e) => {
+            // Check of we diep genoeg ingezoomd zijn
+            if (map.getZoom() < 10) {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+                return;
+            }
+        
+            // Verander cursor naar handje
+            map.getCanvas().style.cursor = 'pointer';
+        
+            // Haal de coördinaten en de data uit de kolom 'HUISVESTING'
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const props = e.features[0].properties;
+            const Name = props.Name || 'Onbekend';
+            const PlanName = props.Plannaam || 'Onbekend';
+
+            const popupLabel = `${Name} - ${PlanName} dieren`;
+            
+            // Zorg dat de popup meebeweegt als je over het punt gaat
+            popup.setLngLat(coordinates)
+                .setHTML(`<div class="popup-content">${popupLabel}</div>`)
+                .addTo(map);    
+        });
+        
+        // Verwijder de popup als de muis de stal verlaat
+        map.on('mouseleave', 'woningbouw_layer', () => {
             map.getCanvas().style.cursor = '';
             popup.remove();
         });
