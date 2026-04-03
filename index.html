@@ -171,7 +171,7 @@ async function initMap() {
         });
 
         // Stallen met data-driven styling (kleur per type en radius per zoom)
-        await addPmtilesLayer('stallen', 'BAB.pmtiles', 'BAB_laag', 'circle', {
+        await addPmtilesLayer('stallen', 'BAB.pmtiles', 'BAB', 'circle', {
             'circle-color': [
                 'match', ['get', 'VRAAGOMSCHRIJVING'],
                 'HUISVESTING RUNDVEE', '#233C93',
