@@ -71,9 +71,11 @@
 <div id="layerControl">
     <strong>Kaartlagen</strong>
     
-    <label><input type="checkbox" id="toggleVeenweide" checked> <span class="color-box" style="background: #9932CC;"></span> Veenweide</label>
     <label><input type="checkbox" id="toggleN2000" checked> <span class="color-box" style="background: #228B22;"></span> N2000</label>
     <label><input type="checkbox" id="toggleBufferstrook" checked> <span class="color-box" style="background: #115211;"></span> Bufferstrook N2000</label>
+    <label><input type="checkbox" id="toggleNNN"> <span class="color-box" style="background: #2BA172;"></span> NNN </label>
+    <hr>
+    <label><input type="checkbox" id="toggleVeenweide" checked> <span class="color-box" style="background: #9932CC;"></span> Veenweide</label>
     <label><input type="checkbox" id="toggleGWB" checked> <span class="color-box" style="background: #C1A81E;"></span> Grondwaterbescherming</label>
     <label><input type="checkbox" id="toggleBeekdal" checked> <span class="color-box" style="background: #1D405D;"></span> Beekdalen</label>
     <label><input type="checkbox" id="toggleVogelbescherming" checked> <span class="color-box" style="background: #8B4513;"></span> Vogelbescherming</label>
@@ -163,9 +165,13 @@ async function initMap() {
             'fill-color': '#115211', 'fill-opacity': 0.6
         });
 
+        await addPmtilesLayer('NNN', 'NNN.pmtiles', 'NNN', 'fill', {
+            'fill-color': '#2BA172', 'fill-opacity': 0.6
+        });
+
         await addPmtilesLayer('gwb', 'GWB.pmtiles', 'GWB', 'fill', {
             'fill-color': '#C1A81E', 'fill-opacity': 0.6
-        });
+        }, 'none');
 
         await addPmtilesLayer('beekdal', 'Beekdalen.pmtiles', 'Beekdalen', 'fill', {
             'fill-color': '#1D405D', 'fill-opacity': 0.6
@@ -221,6 +227,7 @@ async function initMap() {
         setupToggle('toggleStallen', 'stallen_layer');
         setupToggle('toggleWaterschap', 'waterschap_layer');
         setupToggle('toggleProvincie', 'provincie_layer');
+        setupToggle('toggleNNN', 'NNN_layer');
 
         // Achtergrondkaart toggle (beïnvloedt alle lagen die NIET door ons zijn toegevoegd)
         document.getElementById('toggleBaseMap').addEventListener('change', (e) => {
