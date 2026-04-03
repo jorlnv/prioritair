@@ -250,7 +250,7 @@ async function initMap() {
         
         // --- HOVER VOOR STALLEN ---
         map.on('mousemove', 'stallen_layer', (e) => {
-            if (map.getZoom() < 14) return; // Geen actie bij lage zoom
+            if (map.getZoom() > 14) return; 
         
             map.getCanvas().style.cursor = 'pointer';
             const props = e.features[0].properties;
@@ -275,7 +275,7 @@ async function initMap() {
         // --- HOVER VOOR WONINGBOUW ---
         map.on('mousemove', 'woningbouw_layer', (e) => {
             // Let op: deze staat nu op zoom 10. Pas aan naar 8 als je hem eerder wilt zien.
-            if (map.getZoom() < 8) return; 
+            if (map.getZoom() > 8) return; 
         
             map.getCanvas().style.cursor = 'pointer';
             const props = e.features[0].properties;
