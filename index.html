@@ -106,6 +106,11 @@ const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
 
 async function initMap() {
+    const popup = new maplibregl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
+    
     const map = new maplibregl.Map({
         container: 'map',
         style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
@@ -225,6 +230,38 @@ async function initMap() {
                     map.setLayoutProperty(layer.id, 'visibility', visibility);
                 }
             });
+        });
+        // Hover event voor de stallen
+        map.on('mousemove', 'stallen_layer', (e) => {
+            // Check of we diep genoeg ingezoomd zijn
+            if (map.getZoom() < 8) {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+                return;
+            }
+        
+            // Verander cursor naar handje
+            map.getCanvas().style.cursor = 'pointer';
+        
+            // Haal de coördinaten en de data uit de kolom 'HUISVESTING'
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const props = e.features[0].properties;
+            const huisvestingInfo = props.VRAAGOMSCHRIJVING || 'Onbekend';
+            const emissieInfo = props.Emissie || 0;
+            const aantalDieren = props.GEM_AANTAL_DIEREN || 0;
+
+            const popupLabel = `${huisvestingInfo} - ${aantalDieren} dieren, emissie ${emissieInfo} kg NH3`;
+            
+            // Zorg dat de popup meebeweegt als je over het punt gaat
+            popup.setLngLat(coordinates)
+                .setHTML(`<div class="popup-content">${popupLabel}</div>`)
+                .addTo(map);    
+        });
+        
+        // Verwijder de popup als de muis de stal verlaat
+        map.on('mouseleave', 'stallen_layer', () => {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
         });
     });
 }
