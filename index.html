@@ -225,9 +225,7 @@ async function initMap() {
         map.on('mousemove', 'stallen_layer', (e) => {
             const currentZoom = map.getZoom();
 
-            // We tonen de hover PAS als de gebruiker verder is ingezoomd dan 13
-            // Pas dit getal aan (bv naar 10 of 15) om de grens te verleggen
-            if (currentZoom > 13) {
+            if (currentZoom > 12) {
                 map.getCanvas().style.cursor = 'pointer';
                 
                 const props = e.features[0].properties;
