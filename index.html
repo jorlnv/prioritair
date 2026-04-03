@@ -234,7 +234,7 @@ async function initMap() {
         // Hover event voor de stallen
         map.on('mousemove', 'stallen_layer', (e) => {
             // Check of we diep genoeg ingezoomd zijn
-            if (map.getZoom() < 8) {
+            if (map.getZoom() < 6) {
                 map.getCanvas().style.cursor = '';
                 popup.remove();
                 return;
