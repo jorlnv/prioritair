@@ -1,39 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
-<meta charset="utf-8">
-<title>Prioritaire Kaart met Layer Control</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.css" />
-<style>
-  body { margin:0; padding:0; }
-  #map { position:absolute; top:0; bottom:0; width:100%; }
-  #layerControl {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 10; /* Verhoogd voor zekerheid */
-      background: white;
-      padding: 10px;
-      border-radius: 4px;
-      font-family: sans-serif;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-  }
-  #layerControl label { display: block; cursor: pointer; margin-bottom: 5px; }
-</style>
+    <meta charset="utf-8">
+    <title>Prioritaire Kaart met Legenda</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.css" />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        
+        #layerControl {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            max-width: 250px;
+        }
+
+        #layerControl strong { display: block; margin-bottom: 10px; font-size: 1.1em; }
+        
+        #layerControl label { 
+            display: flex; 
+            align-items: center; 
+            cursor: pointer; 
+            margin-bottom: 8px; 
+            font-size: 0.9em;
+        }
+
+        #layerControl input { margin-right: 10px; }
+
+        .color-box {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin-right: 10px;
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        hr { border: 0; border-top: 1px solid #eee; margin: 10px 0; }
+    </style>
 </head>
 <body>
 
 <div id="layerControl">
-    <strong>Lagen</strong>
-    <label><input type="checkbox" id="toggleVeenweide" checked> Veenweide</label>
-    <label><input type="checkbox" id="toggleN2000" checked> N2000</label>
-    <label><input type="checkbox" id="toggleBufferstrook" checked> Bufferstrook N2000</label>
-    <label><input type="checkbox" id="toggleWaterschap"> Waterschapsgrenzen</label>
-    <label><input type="checkbox" id="toggleProvincie"> Provinciegrenzen </label>
-    <label><input type="checkbox" id="toggleGWB" checked> Grondwaterbeschermingsgebied </label>
-    <label><input type="checkbox" id="toggleBeekdal" checked> Beekdalen </label>
-    <label><input type="checkbox" id="toggleVogelbescherming" checked> Vogelbescherminsggebieden </label>
+    <strong>Kaartlagen</strong>
+    
+    <label><input type="checkbox" id="toggleVeenweide" checked> <span class="color-box" style="background: #9932CC;"></span> Veenweide</label>
+    <label><input type="checkbox" id="toggleN2000" checked> <span class="color-box" style="background: #228B22;"></span> N2000</label>
+    <label><input type="checkbox" id="toggleBufferstrook" checked> <span class="color-box" style="background: #115211;"></span> Bufferstrook N2000</label>
+    <label><input type="checkbox" id="toggleGWB" checked> <span class="color-box" style="background: #C1A81E;"></span> Grondwaterbescherming</label>
+    <label><input type="checkbox" id="toggleBeekdal" checked> <span class="color-box" style="background: #1D405D;"></span> Beekdalen</label>
+    <label><input type="checkbox" id="toggleVogelbescherming" checked> <span class="color-box" style="background: #8B4513;"></span> Vogelbescherming</label>
+    
+    <hr>
+    
+    <label><input type="checkbox" id="toggleWaterschap"> <span class="color-box" style="border: 2px solid #333; background: transparent;"></span> Waterschapsgrenzen</label>
+    <label><input type="checkbox" id="toggleProvincie"> <span class="color-box" style="border: 2px solid #666; background: transparent;"></span> Provinciegrenzen</label>
+    
+    <hr>
+    
+    <label><input type="checkbox" id="toggleBaseMap" checked> Achtergrondkaart</label>
 </div>
 
 <div id="map"></div>
@@ -42,7 +75,6 @@
 <script src="https://cdn.jsdelivr.net/npm/pmtiles@4.4.0/dist/pmtiles.min.js"></script>
 
 <script>
-// Protocol setup moet buiten de async functie
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
 
@@ -51,13 +83,20 @@ async function initMap() {
         container: 'map',
         style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
         center: [5.1, 52.1],
-        zoom: 9 // Iets uitgezoomd voor beter overzicht
+        zoom: 9
     });
 
     map.on('load', async () => {
+        // 1. Verberg standaard alle labels van de basiskaart
+        map.getStyle().layers.forEach((layer) => {
+            if (layer.type === 'symbol') {
+                map.setLayoutProperty(layer.id, 'visibility', 'none');
+            }
+        });
+
         const basePath = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
 
-        // Helper functie om lagen makkelijker toe te voegen
+        // Helper functie voor PMTiles lagen
         async function addPmtilesLayer(id, fileName, sourceLayer, type, paint, visible = 'visible') {
             const url = basePath + fileName;
             const p = new pmtiles.PMTiles(url);
@@ -78,76 +117,73 @@ async function initMap() {
             });
         }
 
-        // Lagen toevoegen in volgorde (onderste eerst)
+        // --- Lagen toevoegen ---
         
-        // 1. Veenweide
         await addPmtilesLayer('veenweide', 'veenweide.pmtiles', 'veenweide_laag', 'fill', {
-            'fill-color': '#9932CC',
-            'fill-opacity': 0.4
+            'fill-color': '#9932CC', 'fill-opacity': 0.4
         });
 
-        // 2. N2000
         await addPmtilesLayer('n2000', 'N2000.pmtiles', 'N2000', 'fill', {
-            'fill-color': '#228B22',
-            'fill-opacity': 0.4
+            'fill-color': '#228B22', 'fill-opacity': 0.4
         });
 
-        // 3. Bufferstrook
         await addPmtilesLayer('bufferstrook', 'bufferstrook.pmtiles', 'bufferstrook', 'fill', {
-            'fill-color': '#115211',
-            'fill-opacity': 0.6
+            'fill-color': '#115211', 'fill-opacity': 0.6
         });
 
-        // 4. Waterschap (Lijnen bovenop)
-        await addPmtilesLayer('waterschap', 'Waterschap.pmtiles', 'Waterschap', 'line', {
-            'line-color': '#333',
-            'line-width': 1.5
-        }, 'none'); 
-
-        // 5. Provinciegrenzen (Lijnen bovenop)
-        await addPmtilesLayer('provincie', 'Provincies.pmtiles', 'Provincies', 'line', {
-            'line-color': '#333',
-            'line-width': 1.5
-        }, 'none'); 
-
-        // 6. GWB
         await addPmtilesLayer('GWB', 'GWB.pmtiles', 'GWB', 'fill', {
-            'fill-color': '#C1A81E',
-            'fill-opacity': 0.6
+            'fill-color': '#C1A81E', 'fill-opacity': 0.6
         });
 
-        // 7. Beekdal
         await addPmtilesLayer('beekdal', 'Beekdalen.pmtiles', 'Beekdalen', 'fill', {
-            'fill-color': '#1D405D',
-            'fill-opacity': 0.6
+            'fill-color': '#1D405D', 'fill-opacity': 0.6
         });
 
-          // 8. Vogelbeschermingsgebied
-        await addPmtilesLayer('vogelbeschermingsgebied', 'Vogelbeschermingsgebied.pmtiles', 'Vogelbeschermingsgebied', 'fill', {
-            'fill-color': '#8B4513',
-            'fill-opacity': 0.6
+        await addPmtilesLayer('vogelbescherming', 'Vogelbeschermingsgebied.pmtiles', 'Vogelbeschermingsgebied', 'fill', {
+            'fill-color': '#8B4513', 'fill-opacity': 0.6
         });
+
+        await addPmtilesLayer('waterschap', 'Waterschap.pmtiles', 'Waterschap', 'line', {
+            'line-color': '#333', 'line-width': 1.5
+        }, 'none');
+
+        await addPmtilesLayer('provincie', 'Provincies.pmtiles', 'Provincies', 'line', {
+            'line-color': '#666', 'line-width': 1.5
+        }, 'none');
 
         // --- Toggle Logic ---
         const setupToggle = (elementId, layerId) => {
-            document.getElementById(elementId).addEventListener('change', (e) => {
-                map.setLayoutProperty(layerId, 'visibility', e.target.checked ? 'visible' : 'none');
-            });
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.addEventListener('change', (e) => {
+                    map.setLayoutProperty(layerId, 'visibility', e.target.checked ? 'visible' : 'none');
+                });
+            }
         };
 
-        setupToggle('toggleWaterschap', 'waterschap_layer');
-        setupToggle('toggleProvincie', 'provincie_layer');
         setupToggle('toggleVeenweide', 'veenweide_layer');
         setupToggle('toggleN2000', 'n2000_layer');
         setupToggle('toggleBufferstrook', 'bufferstrook_layer');
         setupToggle('toggleGWB', 'GWB_layer');
         setupToggle('toggleBeekdal', 'beekdal_layer');
-        setupToggle('toggleVogelbeschermingsgebied', 'vogelbeschermingsgebied_layer');
+        setupToggle('toggleVogelbescherming', 'vogelbescherming_layer');
+        setupToggle('toggleWaterschap', 'waterschap_layer');
+        setupToggle('toggleProvincie', 'provincie_layer');
 
+        // Achtergrondkaart toggle (zonder onze eigen lagen te verbergen)
+        document.getElementById('toggleBaseMap').addEventListener('change', (e) => {
+            const visibility = e.target.checked ? 'visible' : 'none';
+            map.getStyle().layers.forEach((layer) => {
+                if (!layer.id.endsWith('_layer')) {
+                    map.setLayoutProperty(layer.id, 'visibility', visibility);
+                }
+            });
+        });
     });
 }
 
 initMap();
 </script>
+
 </body>
 </html>
