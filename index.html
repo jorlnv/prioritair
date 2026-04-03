@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="utf-8">
-    <title>Prioritaire Kaart met Legenda</title>
+    <title>Prioritaire Kaart - Clean Version</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.css" />
     <style>
@@ -19,7 +19,9 @@
             border-radius: 8px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             box-shadow: 0 0 20px rgba(0,0,0,0.15);
-            max-width: 250px;
+            max-width: 260px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         #layerControl strong { display: block; margin-bottom: 10px; font-size: 1.1em; }
@@ -44,6 +46,15 @@
             flex-shrink: 0;
         }
 
+        .legend-sub-item {
+            margin-left: 28px;
+            margin-bottom: 5px;
+            font-size: 0.85em;
+            color: #555;
+            display: flex;
+            align-items: center;
+        }
+
         hr { border: 0; border-top: 1px solid #eee; margin: 10px 0; }
     </style>
 </head>
@@ -61,12 +72,16 @@
     
     <hr>
     
-    <label><input type="checkbox" id="toggleWaterschap"> <span class="color-box" style="border: 2px solid #333; background: transparent;"></span> Waterschapsgrenzen</label>
-    <label><input type="checkbox" id="toggleProvincie"> <span class="color-box" style="border: 2px solid #666; background: transparent;"></span> Provinciegrenzen</label>
-    
+    <label><input type="checkbox" id="toggleStallen" checked> <strong>Stallen (per type)</strong></label>
+    <div class="legend-sub-item"><span class="color-box" style="background: #233C93;"></span> Rundvee</div>
+    <div class="legend-sub-item"><span class="color-box" style="background: #BC8515;"></span> Varkens</div>
+    <div class="legend-sub-item"><span class="color-box" style="background: #B014AD;"></span> Kippen</div>
+    <div class="legend-sub-item"><span class="color-box" style="background: #cccccc;"></span> Overig</div>
+
     <hr>
     
-    <label><input type="checkbox" id="toggleStallen"> <span class="color-box" style="border: 2px solid #333; background: transparent;"></span> Stallen </label>
+    <label><input type="checkbox" id="toggleWaterschap"> <span class="color-box" style="border: 2px solid #333; background: transparent;"></span> Waterschapsgrenzen</label>
+    <label><input type="checkbox" id="toggleProvincie"> <span class="color-box" style="border: 2px solid #666; background: transparent;"></span> Provinciegrenzen</label>
     
     <hr>
     
@@ -91,7 +106,7 @@ async function initMap() {
     });
 
     map.on('load', async () => {
-        // 1. Verberg standaard alle labels van de basiskaart
+        // Standaard labels van de basiskaart uitzetten voor een rustig beeld
         map.getStyle().layers.forEach((layer) => {
             if (layer.type === 'symbol') {
                 map.setLayoutProperty(layer.id, 'visibility', 'none');
@@ -100,7 +115,7 @@ async function initMap() {
 
         const basePath = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
 
-        // Helper functie voor PMTiles lagen
+        // Algemene functie om PMTiles lagen toe te voegen
         async function addPmtilesLayer(id, fileName, sourceLayer, type, paint, visible = 'visible') {
             const url = basePath + fileName;
             const p = new pmtiles.PMTiles(url);
@@ -121,7 +136,7 @@ async function initMap() {
             });
         }
 
-        // --- Lagen toevoegen ---
+        // --- Data Lagen Inladen ---
         
         await addPmtilesLayer('veenweide', 'veenweide.pmtiles', 'veenweide_laag', 'fill', {
             'fill-color': '#9932CC', 'fill-opacity': 0.4
@@ -135,7 +150,7 @@ async function initMap() {
             'fill-color': '#115211', 'fill-opacity': 0.6
         });
 
-        await addPmtilesLayer('GWB', 'GWB.pmtiles', 'GWB', 'fill', {
+        await addPmtilesLayer('gwb', 'GWB.pmtiles', 'GWB', 'fill', {
             'fill-color': '#C1A81E', 'fill-opacity': 0.6
         });
 
@@ -147,6 +162,24 @@ async function initMap() {
             'fill-color': '#8B4513', 'fill-opacity': 0.6
         });
 
+        // Stallen met data-driven styling (kleur per type en radius per zoom)
+        await addPmtilesLayer('stallen', 'BAB.pmtiles', 'BAB_laag', 'circle', {
+            'circle-color': [
+                'match', ['get', 'VRAAGOMSCHRIJVING'],
+                'HUISVESTING RUNDVEE', '#233C93',
+                'HUISVESTING VARKENS', '#BC8515',
+                'HUISVESTING KIPPEN', '#B014AD',
+                '#cccccc' 
+            ],
+            'circle-radius': [
+                'interpolate', ['linear'], ['zoom'],
+                10, 3,
+                15, 12
+            ],
+            'circle-stroke-width': 1,
+            'circle-stroke-color': '#fff'
+        });
+
         await addPmtilesLayer('waterschap', 'Waterschap.pmtiles', 'Waterschap', 'line', {
             'line-color': '#333', 'line-width': 1.5
         }, 'none');
@@ -155,32 +188,7 @@ async function initMap() {
             'line-color': '#666', 'line-width': 1.5
         }, 'none');
 
-        await addPmtilesLayer('stallen', 'BAB.pmtiles', 'BAB', 'circle', {
-            // 1. Kleur afhankelijk van kolom_X
-            'circle-color': [
-                'match',
-                ['get', 'VRAAGOMSCHRIJVING'],
-                'HUISVESTING RUNDVEE', '#233C93', // Rood voor A
-                'HUISVESTING VARKENS', '#BC8515', // Groen voor B
-                'HUISVESTING KIPPEN', '#B014AD', // Groen voor B
-                '#cccccc'                 // Grijs als fallback
-            ],
-            
-            // 2. Radius die meeschaalt met de zoom
-            // Hier zeggen we: op zoom 10 is de radius 3px, op zoom 15 is de radius 15px
-            'circle-radius': [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                10, 3,
-                15, 15
-            ],
-            
-            'circle-stroke-width': 1,
-            'circle-stroke-color': '#fff'
-        });
-
-        // --- Toggle Logic ---
+        // --- Toggle Functionaliteit ---
         const setupToggle = (elementId, layerId) => {
             const el = document.getElementById(elementId);
             if (el) {
@@ -190,18 +198,18 @@ async function initMap() {
             }
         };
 
+        // Koppel alle checkboxes aan de juiste lagen
         setupToggle('toggleVeenweide', 'veenweide_layer');
         setupToggle('toggleN2000', 'n2000_layer');
         setupToggle('toggleBufferstrook', 'bufferstrook_layer');
-        setupToggle('toggleGWB', 'GWB_layer');
+        setupToggle('toggleGWB', 'gwb_layer');
         setupToggle('toggleBeekdal', 'beekdal_layer');
         setupToggle('toggleVogelbescherming', 'vogelbescherming_layer');
+        setupToggle('toggleStallen', 'stallen_layer');
         setupToggle('toggleWaterschap', 'waterschap_layer');
         setupToggle('toggleProvincie', 'provincie_layer');
-        setupToggle('toggleProvincie', 'provincie_layer');
-        setupToggle('toggleStallen', 'stallen_layer');
 
-        // Achtergrondkaart toggle (zonder onze eigen lagen te verbergen)
+        // Achtergrondkaart toggle (beïnvloedt alle lagen die NIET door ons zijn toegevoegd)
         document.getElementById('toggleBaseMap').addEventListener('change', (e) => {
             const visibility = e.target.checked ? 'visible' : 'none';
             map.getStyle().layers.forEach((layer) => {
