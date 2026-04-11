@@ -13,10 +13,13 @@
             position: absolute; top: 15px; left: 15px; z-index: 10;
             background: white; padding: 15px; border-radius: 8px;
             font-family: sans-serif; box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            max-width: 220px;
         }
-        .layer-item { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; }
+        .layer-item { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; font-size: 0.9em; }
         .layer-item input { margin-right: 10px; }
-        .color-box { width: 12px; height: 12px; margin-right: 8px; border-radius: 2px; }
+        .color-box { width: 12px; height: 12px; margin-right: 8px; border-radius: 2px; flex-shrink: 0; }
+        
+        .maplibregl-popup-content { font-family: sans-serif; padding: 10px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -26,7 +29,7 @@
     <label class="layer-item"><input type="checkbox" id="check-n2000" checked> <div class="color-box" style="background: #228B22;"></div> N2000</label>
     <label class="layer-item"><input type="checkbox" id="check-buffer" checked> <div class="color-box" style="background: #115211;"></div> Bufferstrook</label>
     <label class="layer-item"><input type="checkbox" id="check-wb" checked> <div class="color-box" style="background: #e78ac3;"></div> Woningbouw</label>
-    <label class="layer-item"><input type="checkbox" id="check-regio" checked> <div class="color-box" style="background: #B01499;"></div> Regionale Locaties (Punten)</label>
+    <label class="layer-item"><input type="checkbox" id="check-regio" checked> <div class="color-box" style="background: #B01499; border-radius: 50%;"></div> Regionale Woningbouw</label>
 </div>
 
 <div id="map"></div>
@@ -45,10 +48,15 @@ const map = new maplibregl.Map({
     zoom: 8
 });
 
+const popup = new maplibregl.Popup({
+    closeButton: false,
+    closeOnClick: false
+});
+
 map.on('load', async () => {
     const getUrl = (file) => new URL(file, window.location.href).href;
 
-    // 1. De standaard vlak-lagen (Fill)
+    // Functie voor vlakken
     async function addFillLayer(id, file, sourceLayer, color, opacity = 0.6) {
         const url = getUrl(file);
         const p = new pmtiles.PMTiles(url);
@@ -63,7 +71,7 @@ map.on('load', async () => {
         });
     }
 
-    // 2. De punten-laag (Circle) - SPECIAAL VOOR REGIONALE WB
+    // Functie voor punten
     async function addCircleLayer(id, file, sourceLayer, color) {
         const url = getUrl(file);
         const p = new pmtiles.PMTiles(url);
@@ -83,25 +91,50 @@ map.on('load', async () => {
         });
     }
 
-    // Lagen toevoegen
+    // Lagen laden
     await addFillLayer('n2000', 'N2000.pmtiles', 'N2000', '#228B22', 0.4);
     await addFillLayer('buffer', 'bufferstrook.pmtiles', 'bufferstrook', '#115211', 0.5);
     await addFillLayer('wb', 'Woningbouw.pmtiles', 'Woningbouw', '#e78ac3', 0.7);
-    
-    // Deze gebruikt nu 'circle' in plaats van 'fill'
     await addCircleLayer('regio', 'Regionale_wb.pmtiles', 'Regionale_wb', '#B01499');
 
+    // --- Hover functionaliteit ---
+    const setupHover = (layerId) => {
+        map.on('mousemove', layerId, (e) => {
+            if (e.features.length > 0) {
+                map.getCanvas().style.cursor = 'pointer';
+                const props = e.features[0].properties;
+                
+                // Fallback voor verschillende kolomnamen (GEM uit je GeoJSON, Name uit andere bestanden)
+                const title = props.GEM || props.Name || props.naam || 'Locatie';
+                const extra = props.TYPE || props.Plannaam || '';
+
+                popup.setLngLat(e.lngLat)
+                    .setHTML(`<strong>${title}</strong>${extra ? '<br>' + extra : ''}`)
+                    .addTo(map);
+            }
+        });
+
+        map.on('mouseleave', layerId, () => {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+        });
+    };
+
+    // Activeer hover op beide woningbouw-lagen
+    setupHover('wb_layer');
+    setupHover('regio_layer');
+
     // Toggles
-    const toggle = (id, layer) => {
+    const setupToggle = (id, layer) => {
         document.getElementById(id).addEventListener('change', (e) => {
             map.setLayoutProperty(layer, 'visibility', e.target.checked ? 'visible' : 'none');
         });
     };
 
-    toggle('check-n2000', 'n2000_layer');
-    toggle('check-buffer', 'buffer_layer');
-    toggle('check-wb', 'wb_layer');
-    toggle('check-regio', 'regio_layer');
+    setupToggle('check-n2000', 'n2000_layer');
+    setupToggle('check-buffer', 'buffer_layer');
+    setupToggle('check-wb', 'wb_layer');
+    setupToggle('check-regio', 'regio_layer');
 });
 </script>
 </body>
