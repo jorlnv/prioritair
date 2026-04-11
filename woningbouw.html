@@ -2,80 +2,97 @@
 <html lang="nl">
 <head>
     <meta charset="utf-8">
-    <title>Debug Mode - Woningbouw</title>
+    <title>Woningbouw en N2000</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.css" />
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
-        #status {
-            position: absolute; top: 10px; right: 10px; z-index: 100;
-            background: rgba(0,0,0,0.8); color: white; padding: 10px;
-            font-family: monospace; font-size: 12px; max-width: 300px;
+        
+        #layerControl {
+            position: absolute; top: 15px; left: 15px; z-index: 10;
+            background: white; padding: 15px; border-radius: 8px;
+            font-family: sans-serif; box-shadow: 0 0 15px rgba(0,0,0,0.2);
         }
+        .layer-item { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; }
+        .layer-item input { margin-right: 10px; }
+        .color-box { width: 12px; height: 12px; margin-right: 8px; border-radius: 2px; }
     </style>
 </head>
 <body>
 
-<div id="status">Systeem status: Initialiseren...</div>
+<div id="layerControl">
+    <strong>Lagen</strong><br><br>
+    <label class="layer-item"><input type="checkbox" id="check-n2000" checked> <div class="color-box" style="background: #228B22;"></div> N2000</label>
+    <label class="layer-item"><input type="checkbox" id="check-buffer" checked> <div class="color-box" style="background: #115211;"></div> Bufferstrook</label>
+    <label class="layer-item"><input type="checkbox" id="check-wb" checked> <div class="color-box" style="background: #e78ac3;"></div> Woningbouw</label>
+    <label class="layer-item"><input type="checkbox" id="check-regio" checked> <div class="color-box" style="background: #B01499;"></div> Regionale Woningbouw</label>
+</div>
+
 <div id="map"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pmtiles@4.4.0/dist/pmtiles.min.js"></script>
 
 <script>
-const statusEl = document.getElementById('status');
-function log(msg) { statusEl.innerHTML += '<br>> ' + msg; console.log(msg); }
-
-// 1. Protocol registreren
+// 1. PMTiles Setup
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
-log("PMTiles protocol geregistreerd");
 
 const map = new maplibregl.Map({
     container: 'map',
     style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
     center: [5.1, 52.1],
-    zoom: 7
+    zoom: 8
 });
-
-map.on('error', (e) => log("MAP ERROR: " + e.error.message));
 
 map.on('load', async () => {
-    log("Basiskaart geladen");
+    
+    // Hulpfunctie om paden correct op te lossen voor GitHub Pages
+    const getUrl = (file) => new URL(file, window.location.href).href;
 
-    async function addLayer(id, file, sourceLayer, color) {
-        try {
-            // Dit is de meest veilige manier voor GitHub Pages subfolders
-            const url = new URL(file, window.location.href).href;
-            log(`Laden: ${file}...`);
-            
-            const p = new pmtiles.PMTiles(url);
-            protocol.add(p);
-            
-            map.addSource(id, {
-                type: 'vector',
-                url: `pmtiles://${url}`
-            });
+    async function addLayer(id, file, sourceLayer, color, opacity = 0.6) {
+        const url = getUrl(file);
+        const p = new pmtiles.PMTiles(url);
+        protocol.add(p);
 
-            map.addLayer({
-                id: id + '_layer',
-                type: 'fill',
-                source: id,
-                'source-layer': sourceLayer,
-                paint: { 'fill-color': color, 'fill-opacity': 0.7 }
-            });
-            log(`SUCCES: ${id} toegevoegd`);
-        } catch (err) {
-            log(`FOUT bij ${id}: ` + err.message);
-        }
+        map.addSource(id, {
+            type: 'vector',
+            url: `pmtiles://${url}`
+        });
+
+        map.addLayer({
+            id: id + '_layer',
+            type: 'fill',
+            source: id,
+            'source-layer': sourceLayer,
+            paint: {
+                'fill-color': color,
+                'fill-opacity': opacity
+            }
+        });
     }
 
-    // We laden eerst alleen de probleemlaag om te testen
-    // Zorg dat Regionale_wb.pmtiles in DEZELFDE map staat als dit bestand
-    await addLayer('regionale', 'Regionale_wb.pmtiles', 'Regionale_wb', '#B01499');
-    await addLayer('woningbouw', 'Woningbouw.pmtiles', 'Woningbouw', '#e78ac3');
+    // 2. De 4 Lagen toevoegen
+    // Zorg dat de bestandsnamen (.pmtiles) exact kloppen op je GitHub
+    await addLayer('n2000', 'N2000.pmtiles', 'N2000', '#228B22', 0.4);
+    await addLayer('buffer', 'bufferstrook.pmtiles', 'bufferstrook', '#115211', 0.5);
+    await addLayer('wb', 'Woningbouw.pmtiles', 'Woningbouw', '#e78ac3', 0.7);
+    await addLayer('regio', 'Regionale_wb.pmtiles', 'Regionale_wb', '#B01499', 0.7);
+
+    // 3. Eenvoudige Toggles
+    const toggle = (id, layer) => {
+        document.getElementById(id).addEventListener('change', (e) => {
+            map.setLayoutProperty(layer, 'visibility', e.target.checked ? 'visible' : 'none');
+        });
+    };
+
+    toggle('check-n2000', 'n2000_layer');
+    toggle('check-buffer', 'buffer_layer');
+    toggle('check-wb', 'wb_layer');
+    toggle('check-regio', 'regio_layer');
 });
 </script>
+
 </body>
 </html>
