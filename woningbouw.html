@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="utf-8">
-    <title>Prioritaire Kaart - Clean Version</title>
+    <title>Woningbouwprojecten en stikstofgevoelige N2000</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.21.1/dist/maplibre-gl.css" />
     <style>
@@ -46,21 +46,13 @@
             flex-shrink: 0;
         }
 
-        .legend-sub-item {
-            margin-left: 28px;
-            margin-bottom: 5px;
-            font-size: 0.85em;
-            color: #555;
-            display: flex;
-            align-items: center;
-        }
-        
         .maplibregl-popup-content {
             max-width: 200px;
             font-size: 11px;
             line-height: 1.4;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 10px;
         }
 
         hr { border: 0; border-top: 1px solid #eee; margin: 10px 0; }
@@ -76,8 +68,8 @@
 
     <hr>
     
-    <label><input type="checkbox" id="toggleWoningbouw"> <span class="color-box" style="background: #e78ac3; border-radius: 2px;"></span> Grootschalige woningbouwprojecten</label>
-    <label><input type="checkbox" id="toggleRegionaleWoningbouw"> <span class="color-box" style="background: #B01499; border-radius: 2px;"></span> Grootschalige woningbouwprojecten</label>
+    <label><input type="checkbox" id="toggleWoningbouw" checked> <span class="color-box" style="background: #e78ac3; border-radius: 2px;"></span> Grootschalige woningbouw</label>
+    <label><input type="checkbox" id="toggleRegionaleWoningbouw" checked> <span class="color-box" style="background: #B01499; border-radius: 2px;"></span> Regionale woningbouw</label>
 
     <hr>
     
@@ -95,6 +87,7 @@
 <script src="https://cdn.jsdelivr.net/npm/pmtiles@4.4.0/dist/pmtiles.min.js"></script>
 
 <script>
+// 1. Initialiseer PMTiles Protocol (slechts één keer)
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
 
@@ -108,23 +101,23 @@ async function initMap() {
         container: 'map',
         style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
         center: [5.1, 52.1],
-        zoom: 9
+        zoom: 7.5 // Iets verder uitgezoomd voor heel Nederland
     });
 
     map.on('load', async () => {
         
-        // Standaard labels van de basiskaart uitzetten
+        // Labels van basiskaart uitzetten voor rustiger beeld
         map.getStyle().layers.forEach((layer) => {
             if (layer.type === 'symbol') {
                 map.setLayoutProperty(layer.id, 'visibility', 'none');
             }
         });
 
-        const basePath = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
-
-        // Algemene functie om PMTiles lagen toe te voegen
+        // Hulpfunctie voor robuuste paden naar PMTiles
         async function addPmtilesLayer(id, fileName, sourceLayer, type, paint, visible = 'visible') {
-            const url = basePath + fileName;
+            // Dit zorgt dat de URL altijd klopt, ook op GitHub Pages woningbouw.html
+            const url = new URL(fileName, window.location.href).href;
+            
             const p = new pmtiles.PMTiles(url);
             protocol.add(p);
             
@@ -143,60 +136,58 @@ async function initMap() {
             });
         }
 
-        // --- Data Lagen Inladen ---
-        
-
+        // --- Data Lagen Laden ---
+        // Let op: bestandsnamen moeten exact (case-sensitive) overeenkomen op GitHub
         await addPmtilesLayer('n2000', 'N2000.pmtiles', 'N2000', 'fill', {
             'fill-color': '#228B22', 'fill-opacity': 0.4
         });
 
         await addPmtilesLayer('bufferstrook', 'bufferstrook.pmtiles', 'bufferstrook', 'fill', {
-            'fill-color': '#115211', 'fill-opacity': 0.6
+            'fill-color': '#115211', 'fill-opacity': 0.5
         });
 
-
         await addPmtilesLayer('woningbouw', 'Woningbouw.pmtiles', 'Woningbouw', 'fill', {
-            'fill-color': '#e78ac3', 'fill-opacity': 0.6
-        }, 'none');
-
+            'fill-color': '#e78ac3', 'fill-opacity': 0.7
+        });
 
         await addPmtilesLayer('regionale_woningbouw', 'Regionale_wb.pmtiles', 'Regionale_wb', 'fill', {
-            'fill-color': '#B01499', 'fill-opacity': 0.6
-        }, 'none');
-        
+            'fill-color': '#B01499', 'fill-opacity': 0.7
+        });
 
         await addPmtilesLayer('waterschap', 'Waterschap.pmtiles', 'Waterschap', 'line', {
-            'line-color': '#333', 'line-width': 1.5
+            'line-color': '#333', 'line-width': 1
         }, 'none');
 
         await addPmtilesLayer('provincie', 'Provincies.pmtiles', 'Provincies', 'line', {
-            'line-color': '#666', 'line-width': 1.5
+            'line-color': '#666', 'line-width': 1.2
         }, 'none');
 
 
-        // --- Hover events ---
+        // --- Interactie ---
 
+        const setupHover = (layerId) => {
+            map.on('mousemove', layerId, (e) => {
+                map.getCanvas().style.cursor = 'pointer';
+                const props = e.features[0].properties;
+                // Gebruik fallback voor verschillende kolomnamen
+                const name = props.Name || props.naam || 'Project';
+                const plan = props.Plannaam || props.plan || '';
+                
+                popup.setLngLat(e.lngLat)
+                    .setHTML(`<strong>${name}</strong>${plan ? '<br>Plan: ' + plan : ''}`)
+                    .addTo(map);    
+            });
 
-        // Hover voor de woningbouw (Altijd aan)
-        map.on('mousemove', 'woningbouw_layer', (e) => {
-            map.getCanvas().style.cursor = 'pointer';
-            
-            const props = e.features[0].properties;
-            const name = props.Name || 'Onbekend';
-            const plan = props.Plannaam || 'Onbekend';
-            
-            popup.setLngLat(e.lngLat)
-                .setHTML(`<div class="popup-content"><strong>${name}</strong><br>Plan: ${plan}</div>`)
-                .addTo(map);    
-        });
+            map.on('mouseleave', layerId, () => {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+            });
+        };
 
-        map.on('mouseleave', 'woningbouw_layer', () => {
-            map.getCanvas().style.cursor = '';
-            popup.remove();
-        });
+        setupHover('woningbouw_layer');
+        setupHover('regionale_woningbouw_layer');
 
-
-        // --- Toggle Functionaliteit ---
+        // --- Toggles ---
 
         const setupToggle = (elementId, layerId) => {
             const el = document.getElementById(elementId);
@@ -211,6 +202,8 @@ async function initMap() {
         setupToggle('toggleBufferstrook', 'bufferstrook_layer');
         setupToggle('toggleWoningbouw', 'woningbouw_layer');
         setupToggle('toggleRegionaleWoningbouw', 'regionale_woningbouw_layer');
+        setupToggle('toggleWaterschap', 'waterschap_layer');
+        setupToggle('toggleProvincie', 'provincie_layer');
 
         document.getElementById('toggleBaseMap').addEventListener('change', (e) => {
             const visibility = e.target.checked ? 'visible' : 'none';
@@ -220,7 +213,6 @@ async function initMap() {
                 }
             });
         });
-
     });
 }
 
