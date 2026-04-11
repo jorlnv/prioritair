@@ -87,7 +87,7 @@
 <script src="https://cdn.jsdelivr.net/npm/pmtiles@4.4.0/dist/pmtiles.min.js"></script>
 
 <script>
-// 1. Initialiseer PMTiles Protocol (slechts één keer)
+// 1. Initialiseer PMTiles Protocol
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
 
@@ -101,21 +101,21 @@ async function initMap() {
         container: 'map',
         style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
         center: [5.1, 52.1],
-        zoom: 7.5 // Iets verder uitgezoomd voor heel Nederland
+        zoom: 7.5
     });
 
     map.on('load', async () => {
         
-        // Labels van basiskaart uitzetten voor rustiger beeld
+        // Basiskaart labels verbergen
         map.getStyle().layers.forEach((layer) => {
             if (layer.type === 'symbol') {
                 map.setLayoutProperty(layer.id, 'visibility', 'none');
             }
         });
 
-        // Hulpfunctie voor robuuste paden naar PMTiles
+        // Functie voor lagen toevoegen
         async function addPmtilesLayer(id, fileName, sourceLayer, type, paint, visible = 'visible') {
-            // Dit zorgt dat de URL altijd klopt, ook op GitHub Pages woningbouw.html
+            // Forceert correct pad op GitHub Pages
             const url = new URL(fileName, window.location.href).href;
             
             const p = new pmtiles.PMTiles(url);
@@ -136,8 +136,7 @@ async function initMap() {
             });
         }
 
-        // --- Data Lagen Laden ---
-        // Let op: bestandsnamen moeten exact (case-sensitive) overeenkomen op GitHub
+        // --- Data Lagen ---
         await addPmtilesLayer('n2000', 'N2000.pmtiles', 'N2000', 'fill', {
             'fill-color': '#228B22', 'fill-opacity': 0.4
         });
@@ -150,6 +149,7 @@ async function initMap() {
             'fill-color': '#e78ac3', 'fill-opacity': 0.7
         });
 
+        // Hier gebruiken we de laagnaam 'Regionale_wb' die je in Tippecanoe hebt ingesteld
         await addPmtilesLayer('regionale_woningbouw', 'Regionale_wb.pmtiles', 'Regionale_wb', 'fill', {
             'fill-color': '#B01499', 'fill-opacity': 0.7
         });
@@ -162,62 +162,13 @@ async function initMap() {
             'line-color': '#666', 'line-width': 1.2
         }, 'none');
 
-
         // --- Interactie ---
-
         const setupHover = (layerId) => {
             map.on('mousemove', layerId, (e) => {
                 map.getCanvas().style.cursor = 'pointer';
                 const props = e.features[0].properties;
-                // Gebruik fallback voor verschillende kolomnamen
                 const name = props.Name || props.naam || 'Project';
                 const plan = props.Plannaam || props.plan || '';
                 
                 popup.setLngLat(e.lngLat)
-                    .setHTML(`<strong>${name}</strong>${plan ? '<br>Plan: ' + plan : ''}`)
-                    .addTo(map);    
-            });
-
-            map.on('mouseleave', layerId, () => {
-                map.getCanvas().style.cursor = '';
-                popup.remove();
-            });
-        };
-
-        setupHover('woningbouw_layer');
-        setupHover('regionale_woningbouw_layer');
-
-        // --- Toggles ---
-
-        const setupToggle = (elementId, layerId) => {
-            const el = document.getElementById(elementId);
-            if (el) {
-                el.addEventListener('change', (e) => {
-                    map.setLayoutProperty(layerId, 'visibility', e.target.checked ? 'visible' : 'none');
-                });
-            }
-        };
-
-        setupToggle('toggleN2000', 'n2000_layer');
-        setupToggle('toggleBufferstrook', 'bufferstrook_layer');
-        setupToggle('toggleWoningbouw', 'woningbouw_layer');
-        setupToggle('toggleRegionaleWoningbouw', 'regionale_woningbouw_layer');
-        setupToggle('toggleWaterschap', 'waterschap_layer');
-        setupToggle('toggleProvincie', 'provincie_layer');
-
-        document.getElementById('toggleBaseMap').addEventListener('change', (e) => {
-            const visibility = e.target.checked ? 'visible' : 'none';
-            map.getStyle().layers.forEach((layer) => {
-                if (!layer.id.endsWith('_layer')) {
-                    map.setLayoutProperty(layer.id, 'visibility', visibility);
-                }
-            });
-        });
-    });
-}
-
-initMap();
-</script>
-
-</body>
-</html>
+                    .setHTML(
