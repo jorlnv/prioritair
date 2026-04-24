@@ -94,7 +94,7 @@
     Gewaspercelen
     <label><input type="checkbox" id="toggleGrasland"> <span class="color-box" style="background: #ACF47F; border-radius: 0px;"></span> Agrarisch Grasland </label>
     <label><input type="checkbox" id="toggleAkkerbouw"> <span class="color-box" style="background: #FFFF12; border-radius: 0px;"></span> Akkerbouw </label>
-    <label><input type="checkbox" id="toggleLelies"> <span class="color-box" style="background: #F209B8; border-radius: 0px;"></span> Agrarisch Grasland </label>
+    <label><input type="checkbox" id="toggleLelies"> <span class="color-box" style="background: #F209B8; border-radius: 0px;"></span> Lelieteelt </label>
    
     <hr>
     
@@ -173,7 +173,7 @@ async function initMap() {
         await addPmtilesLayer('akkerbouw', 'AKKERBOUW.pmtiles', 'AKKERBOUW', 'fill', {
             'fill-color': '#FFFF12', 'fill-opacity': 0.6
         }, 'none');
-        await addPmtilesLayer('lelies', 'Lelies.pmtiles', 'LELIES', 'fill', {
+        await addPmtilesLayer('lelies', 'Lelies.pmtiles', 'Lelies', 'fill', {
             'fill-color': '#F209B8', 'fill-opacity': 0.6
         }, 'none');
 
