@@ -231,7 +231,26 @@ async function initMap() {
         }, 'none');
 
         // --- Hover events ---
+        // Hover voor de stallen (ALLEEN BIJ DIEP INZOOMEN)
+        map.on('mousemove', 'akkerbouw_layer', (e) => {
+            const currentZoom = map.getZoom();
 
+            if (currentZoom > 12) {
+                map.getCanvas().style.cursor = 'pointer';
+                
+                const props = e.features[0].properties;
+                const category = props.Category || 'Onbekend';
+                
+                popup.setLngLat(e.lngLat)
+                    .setHTML(`<div class="popup-content">${category}</div>`)
+                    .addTo(map);    
+            });
+            } else {
+                // Als we niet diep genoeg zijn ingezoomd: cursor terug en popup weg
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+            }
+        });
         // Hover voor de stallen (ALLEEN BIJ DIEP INZOOMEN)
         map.on('mousemove', 'stallen_layer', (e) => {
             const currentZoom = map.getZoom();
