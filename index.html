@@ -239,7 +239,7 @@ async function initMap() {
                 map.getCanvas().style.cursor = 'pointer';
                 
                 const props = e.features[0].properties;
-                const category = props.Category || 'Onbekend';
+                const category = props.category || 'Onbekend';
                 
                 popup.setLngLat(e.lngLat)
                     .setHTML(`<div class="popup-content">${category}</div>`)
