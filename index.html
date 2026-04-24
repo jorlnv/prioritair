@@ -91,6 +91,10 @@
     <div class="legend-sub-item"><span class="color-box" style="background: #cccccc;"></span> Overig</div>
 
     <hr>
+    Gewaspercelen
+    <label><input type="checkbox" id="toggleGrasland" checked> <span class="color-box" style="background: #9932CC; border-radius: 2px;"></span> Grasland </label>
+    
+    <hr>
     
     <label><input type="checkbox" id="toggleWoningbouw"> <span class="color-box" style="background: #A6329C; border-radius: 2px;"></span> Grootschalige woningbouwprojecten</label>
 
@@ -218,6 +222,9 @@ async function initMap() {
             'line-color': '#666', 'line-width': 1.5
         }, 'none');
 
+        await addPmtilesLayer('grasland', 'Grasland.pmtiles', 'GRASLAND', 'fill', {
+            'fill-color': '#9932CC', 'fill-opacity': 0.6
+        });
 
         // --- Hover events ---
 
@@ -288,6 +295,8 @@ async function initMap() {
         setupToggle('toggleProvincie', 'provincie_layer');
         setupToggle('toggleNNN', 'NNN_layer');
         setupToggle('toggleWoningbouw', 'woningbouw_layer');
+        setupToggle('toggleGrasland', 'grasland_layer');
+
 
         document.getElementById('toggleBaseMap').addEventListener('change', (e) => {
             const visibility = e.target.checked ? 'visible' : 'none';
