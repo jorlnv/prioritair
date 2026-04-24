@@ -92,11 +92,12 @@
 
     <hr>
     Gewaspercelen
-    <label><input type="checkbox" id="toggleGrasland"> <span class="color-box" style="background: #9932CC; border-radius: 2px;"></span> Grasland </label>
-    
+    <label><input type="checkbox" id="toggleGrasland"> <span class="color-box" style="background: #ACF47F; border-radius: 0px;"></span> Agrarisch Grasland </label>
+    <label><input type="checkbox" id="toggleAkkerbouw"> <span class="color-box" style="background: #D6C934; border-radius: 0px;"></span> Akkerbouw </label>
+   
     <hr>
     
-    <label><input type="checkbox" id="toggleWoningbouw"> <span class="color-box" style="background: #A6329C; border-radius: 2px;"></span> Grootschalige woningbouwprojecten</label>
+    <label><input type="checkbox" id="toggleWoningbouw"> <span class="color-box" style="background: #570B2E; border-radius: 2px;"></span> Grootschalige woningbouwprojecten</label>
 
     <hr>
     
@@ -193,7 +194,7 @@ async function initMap() {
         });
 
         await addPmtilesLayer('woningbouw', 'Woningbouw.pmtiles', 'Woningbouw', 'fill', {
-            'fill-color': '#A6329C', 'fill-opacity': 0.6
+            'fill-color': '#570B2E', 'fill-opacity': 0.6
         }, 'none');
         
         // Stallen met data-driven styling
@@ -223,7 +224,10 @@ async function initMap() {
         }, 'none');
 
         await addPmtilesLayer('grasland', 'GRASLAND.pmtiles', 'GRASLAND', 'fill', {
-            'fill-color': '#9932CC', 'fill-opacity': 0.6
+            'fill-color': '#ACF47F', 'fill-opacity': 0.6
+        }, 'none');
+        await addPmtilesLayer('akkerbouw', 'AKKERBOUW.pmtiles', 'AKKERBOUW', 'fill', {
+            'fill-color': '#D6C934', 'fill-opacity': 0.6
         }, 'none');
 
         // --- Hover events ---
@@ -296,6 +300,7 @@ async function initMap() {
         setupToggle('toggleNNN', 'NNN_layer');
         setupToggle('toggleWoningbouw', 'woningbouw_layer');
         setupToggle('toggleGrasland', 'grasland_layer');
+        setupToggle('toggleAkkerbouw', 'akkerbouw_layer');
 
 
         document.getElementById('toggleBaseMap').addEventListener('change', (e) => {
