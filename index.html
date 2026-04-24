@@ -92,7 +92,7 @@
 
     <hr>
     Gewaspercelen
-    <label><input type="checkbox" id="toggleGrasland" checked> <span class="color-box" style="background: #9932CC; border-radius: 2px;"></span> Grasland </label>
+    <label><input type="checkbox" id="toggleGrasland"> <span class="color-box" style="background: #9932CC; border-radius: 2px;"></span> Grasland </label>
     
     <hr>
     
@@ -222,9 +222,9 @@ async function initMap() {
             'line-color': '#666', 'line-width': 1.5
         }, 'none');
 
-        await addPmtilesLayer('grasland', 'Grasland.pmtiles', 'GRASLAND', 'fill', {
+        await addPmtilesLayer('grasland', 'GRASLAND.pmtiles', 'GRASLAND', 'fill', {
             'fill-color': '#9932CC', 'fill-opacity': 0.6
-        });
+        }, 'none');
 
         // --- Hover events ---
 
